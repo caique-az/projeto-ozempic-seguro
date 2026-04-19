@@ -171,7 +171,7 @@ class UserManagementService:
 
         # Tentar alterar senha
         try:
-            success, message = self._user_service.change_password(user_id, new_password)
+            success, message = self._user_service.update_password(user_id, new_password)
 
             if success:
                 logger.info(f"Password changed for user ID: {user_id}")
