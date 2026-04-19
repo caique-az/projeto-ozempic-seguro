@@ -91,6 +91,9 @@ src/ozempic_seguro/_version.py
 # JetBrains IDEs (PyCharm, IntelliJ, etc.)
 .idea/
 
+# Claude Code internal files
+.claude/
+
 # MacOS
 .DS_Store
 
