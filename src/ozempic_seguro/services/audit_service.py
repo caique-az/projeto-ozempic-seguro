@@ -14,44 +14,44 @@ class AuditService:
         self,
         offset: int = 0,
         limit: int = 50,
-        filtro_usuario: Optional[int] = None,
-        filtro_acao: Optional[str] = None,
-        filtro_tabela: Optional[str] = None,
-        data_inicio: Optional[str] = None,
-        data_fim: Optional[str] = None,
+        user_filter: Optional[int] = None,
+        action_filter: Optional[str] = None,
+        table_filter: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> List[Dict[Any, Any]]:
-        """Retorna logs de auditoria com filtros e paginação."""
+        """Returns audit logs with filters and pagination."""
         result = self.audit_repo.get_logs(
-            offset, limit, filtro_usuario, filtro_acao, filtro_tabela, data_inicio, data_fim
+            offset, limit, user_filter, action_filter, table_filter, start_date, end_date
         )
         return list(result) if result else []
 
     def count_logs(
         self,
-        filtro_usuario: Optional[int] = None,
-        filtro_acao: Optional[str] = None,
-        filtro_tabela: Optional[str] = None,
-        data_inicio: Optional[str] = None,
-        data_fim: Optional[str] = None,
+        user_filter: Optional[int] = None,
+        action_filter: Optional[str] = None,
+        table_filter: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> int:
-        """Retorna o total de logs que correspondem aos filtros."""
+        """Returns the total number of logs matching the filters."""
         result = self.audit_repo.count_logs(
-            filtro_usuario, filtro_acao, filtro_tabela, data_inicio, data_fim
+            user_filter, action_filter, table_filter, start_date, end_date
         )
         return int(result) if result is not None else 0
 
     def create_log(
         self,
-        usuario_id: Optional[int] = None,
-        acao: Optional[str] = None,
-        tabela_afetada: Optional[str] = None,
+        user_id: Optional[int] = None,
+        action: Optional[str] = None,
+        affected_table: Optional[str] = None,
         id_afetado: Optional[int] = None,
-        dados_anteriores: Optional[Dict] = None,
-        dados_novos: Optional[Dict] = None,
-        endereco_ip: Optional[str] = None,
+        previous_data: Optional[Dict] = None,
+        new_data: Optional[Dict] = None,
+        ip_address: Optional[str] = None,
     ) -> Optional[int]:
-        """Registra um log de auditoria e retorna o ID do registro."""
+        """Records an audit log entry and returns the record ID."""
         result = self.audit_repo.create_log(
-            usuario_id, acao, tabela_afetada, id_afetado, dados_anteriores, dados_novos, endereco_ip
+            user_id, action, affected_table, id_afetado, previous_data, new_data, ip_address
         )
         return int(result) if result is not None else None

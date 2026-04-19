@@ -12,70 +12,70 @@ class PainelAdministradorFrame(BaseFrameView):
     """Painel do administrador - herda de BaseFrameView"""
 
     def __init__(
-        self, master, finalizar_sessao_callback=None, usuario_logado=None, *args, **kwargs
+        self, master, end_session_callback=None, logged_in_user=None, *args, **kwargs
     ):
-        self.usuario_logado = usuario_logado
-        super().__init__(master, finalizar_sessao_callback, *args, **kwargs)
-        self.criar_tela_principal()
+        self.logged_in_user = logged_in_user
+        super().__init__(master, end_session_callback, *args, **kwargs)
+        self.create_main_screen()
 
-    def criar_tela_principal(self):
-        """Cria a tela principal do administrador"""
+    def create_main_screen(self):
+        """Creates the administrator main screen"""
         for widget in self.winfo_children():
             widget.destroy()
 
-        self.criar_header("Administrador")
-        self.criar_botoes()
-        self.criar_botao_finalizar()
+        self.create_header_widget("Administrador")
+        self.create_buttons()
+        self.create_finish_button()
 
-    def criar_botoes(self):
+    def create_buttons(self):
         buttons_data = [
             {
                 "text": "👥 Gerenciar Usuários",
-                "command": self.gerenciar_usuarios,
+                "command": self.manage_users,
                 "style": "primary",
             },
-            {"text": "🗄️ Gerenciar Gavetas", "command": self.gerenciar_gavetas, "style": "primary"},
-            {"text": "➕ Cadastro de Usuário", "command": self.cadastro_usuario, "style": "success"},
+            {"text": "🗄️ Gerenciar Gavetas", "command": self.manage_drawers, "style": "primary"},
+            {"text": "➕ Cadastro de Usuário", "command": self.register_user, "style": "success"},
             {
                 "text": "📋 Registro de Auditoria",
-                "command": self.registro_auditoria,
+                "command": self.audit_registry,
                 "style": "secondary",
             },
-            {"text": "🔧 Diagnóstico", "command": self.diagnostico, "style": "warning"},
-            {"text": "📊 Histórico", "command": self.mostrar_historico, "style": "secondary"},
+            {"text": "🔧 Diagnóstico", "command": self.diagnostics, "style": "warning"},
+            {"text": "📊 Histórico", "command": self.show_history, "style": "secondary"},
         ]
         self.button_grid = ResponsiveButtonGrid(self, buttons_data, max_cols=3)
 
-    def gerenciar_gavetas(self):
-        self._transicao_tela(lambda: AdminGavetasFrame(self, voltar_callback=self.voltar_principal))
+    def manage_drawers(self):
+        self._transition_screen(lambda: AdminGavetasFrame(self, back_callback=self.back_to_main))
 
-    def mostrar_historico(self):
-        self._transicao_tela(lambda: HistoricoView(self, voltar_callback=self.voltar_principal))
+    def show_history(self):
+        self._transition_screen(lambda: HistoricoView(self, back_callback=self.back_to_main))
 
-    def registro_auditoria(self):
-        self._transicao_tela(lambda: AuditoriaFrame(self, voltar_callback=self.voltar_principal))
+    def audit_registry(self):
+        self._transition_screen(lambda: AuditoriaFrame(self, back_callback=self.back_to_main))
 
-    def gerenciar_usuarios(self):
-        def criar():
-            if hasattr(self, "usuario_logado"):
+    def manage_users(self):
+        def create():
+            if hasattr(self, "logged_in_user"):
                 GerenciamentoUsuariosFrame(
-                    self, voltar_callback=self.voltar_principal, usuario_logado=self.usuario_logado
+                    self, back_callback=self.back_to_main, logged_in_user=self.logged_in_user
                 )
             else:
                 GerenciamentoUsuariosFrame(
-                    self, voltar_callback=self.voltar_principal, usuario_logado=None
+                    self, back_callback=self.back_to_main, logged_in_user=None
                 )
 
-        self._transicao_tela(criar)
+        self._transition_screen(create)
 
-    def cadastro_usuario(self):
-        self._transicao_tela(
-            lambda: CadastroUsuarioFrame(self, voltar_callback=self.voltar_principal)
+    def register_user(self):
+        self._transition_screen(
+            lambda: CadastroUsuarioFrame(self, back_callback=self.back_to_main)
         )
 
-    def diagnostico(self):
-        self._transicao_tela(lambda: DiagnosticoFrame(self, voltar_callback=self.voltar_principal))
+    def diagnostics(self):
+        self._transition_screen(lambda: DiagnosticoFrame(self, back_callback=self.back_to_main))
 
-    def voltar_principal(self):
-        """Volta para a tela principal com transição"""
-        self._transicao_tela(self.criar_tela_principal)
+    def back_to_main(self):
+        """Returns to main screen with transition"""
+        self._transition_screen(self.create_main_screen)

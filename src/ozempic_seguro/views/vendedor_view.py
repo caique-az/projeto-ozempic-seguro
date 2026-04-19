@@ -1,11 +1,11 @@
 """
-View do vendedor - permite apenas abrir gavetas.
+Vendor view - allows only opening drawers.
 """
 from .base_user_view import BaseUserFrame
 
 
 class VendedorFrame(BaseUserFrame):
-    """Frame para usuários do tipo vendedor."""
+    """Frame for vendor type users."""
 
-    TITULO = "Vendedor"
-    TIPO_USUARIO = "vendedor"
+    TITLE = "Vendedor"
+    USER_TYPE = "vendedor"

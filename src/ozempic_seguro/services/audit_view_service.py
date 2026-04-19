@@ -20,9 +20,9 @@ class AuditLogItem:
     """Item de log de auditoria"""
 
     id: int
-    data_hora: str
+    timestamp: str
     usuario: str
-    acao: str
+    action: str
     tabela: str
     id_afetado: Optional[int]
     dados_anteriores: Optional[str]
@@ -30,38 +30,38 @@ class AuditLogItem:
     ip: Optional[str]
 
     @property
-    def data_hora_display(self) -> str:
+    def timestamp_display(self) -> str:
         """Retorna data/hora formatada"""
         try:
-            if isinstance(self.data_hora, str):
-                return self.data_hora
-            return str(self.data_hora)
+            if isinstance(self.timestamp, str):
+                return self.timestamp
+            return str(self.timestamp)
         except Exception:
             return "N/A"
 
     @property
-    def acao_display(self) -> str:
+    def action_display(self) -> str:
         """Retorna ação formatada"""
-        return self.acao.upper() if self.acao else "N/A"
+        return self.action.upper() if self.action else "N/A"
 
 
 @dataclass
 class AuditFilter:
     """Filtros para busca de auditoria"""
 
-    acao: Optional[str] = None
-    data_inicio: Optional[str] = None
-    data_fim: Optional[str] = None
-    usuario: Optional[str] = None
-    tabela: Optional[str] = None
+    action: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    user: Optional[str] = None
+    table: Optional[str] = None
 
     @classmethod
     def default_last_7_days(cls) -> "AuditFilter":
         """Cria filtro padrão dos últimos 7 dias"""
-        data_fim = datetime.now()
-        data_inicio = data_fim - timedelta(days=7)
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=7)
         return cls(
-            data_inicio=data_inicio.strftime("%Y-%m-%d"), data_fim=data_fim.strftime("%Y-%m-%d")
+            start_date=start_date.strftime("%Y-%m-%d"), end_date=end_date.strftime("%Y-%m-%d")
         )
 
 
@@ -123,28 +123,26 @@ class AuditViewService:
             offset = (page - 1) * per_page
 
             # Preparar filtros
-            filtro_acao = None
-            data_inicio = None
-            data_fim = None
+            action_filter = None
+            start_date = None
+            end_date = None
 
             if filter:
-                if filter.acao and filter.acao != "Todas":
-                    filtro_acao = filter.acao
-                data_inicio = filter.data_inicio
-                data_fim = filter.data_fim
+                if filter.action and filter.action != "Todas":
+                    action_filter = filter.action
+                start_date = filter.start_date
+                end_date = filter.end_date
 
-            # Obter logs
             logs = self._audit_service.get_logs(
                 offset=offset,
                 limit=per_page,
-                filtro_acao=filtro_acao,
-                data_inicio=data_inicio,
-                data_fim=data_fim,
+                action_filter=action_filter,
+                start_date=start_date,
+                end_date=end_date,
             )
 
-            # Contar total
             total = self._audit_service.count_logs(
-                filtro_acao=filtro_acao, data_inicio=data_inicio, data_fim=data_fim
+                action_filter=action_filter, start_date=start_date, end_date=end_date
             )
 
             # Converter para AuditLogItem
@@ -154,9 +152,9 @@ class AuditViewService:
                     items.append(
                         AuditLogItem(
                             id=log.get("id", 0),
-                            data_hora=log.get("data_hora", ""),
+                            timestamp=log.get("data_hora", ""),
                             usuario=log.get("usuario", ""),
-                            acao=log.get("acao", ""),
+                            action=log.get("acao", ""),
                             tabela=log.get("tabela_afetada", ""),
                             id_afetado=log.get("id_afetado"),
                             dados_anteriores=log.get("dados_anteriores"),

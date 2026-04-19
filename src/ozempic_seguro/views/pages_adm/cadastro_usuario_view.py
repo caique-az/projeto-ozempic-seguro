@@ -13,12 +13,12 @@ from ...services.user_registration_service import get_user_registration_service
 class CadastroUsuarioFrame(customtkinter.CTkFrame):
     BG_COLOR = "#3B6A7D"
 
-    def __init__(self, master, voltar_callback=None, *args, **kwargs):
-        self.voltar_callback = voltar_callback
+    def __init__(self, master, back_callback=None, *args, **kwargs):
+        self.back_callback = back_callback
         self.registration_service = get_user_registration_service()
         super().__init__(master, fg_color=self.BG_COLOR, *args, **kwargs)
 
-        # Criar overlay para esconder construção
+        # Create overlay to hide construction
         self._overlay = customtkinter.CTkFrame(master, fg_color=self.BG_COLOR)
         self._overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
         self._overlay.lift()
@@ -26,261 +26,261 @@ class CadastroUsuarioFrame(customtkinter.CTkFrame):
 
         self.pack(fill="both", expand=True)
 
-        # Configuração da validação de entrada
-        self.vcmd_nome = (self.register(self.validar_entrada_nome), "%P")
-        self.vcmd_numerico = (self.register(self.validar_entrada_numerica), "%P")
+        # Input validation configuration
+        self.vcmd_name = (self.register(self.validate_name_input), "%P")
+        self.vcmd_numeric = (self.register(self.validate_numeric_input), "%P")
 
-        # Inicializa os temporizadores
-        self.erro_timer = None
-        self.mensagem_timer = None
+        # Initialize timers
+        self.error_timer = None
+        self.message_timer = None
 
-        self.criar_topo()
-        self.criar_interface_cadastro()
-        self.criar_botao_voltar()
-        self.criar_teclado_virtual()
+        self.create_header()
+        self.create_registration_interface()
+        self.create_back_button()
+        self.create_virtual_keyboard()
 
-        # Variável para controlar qual campo está ativo
-        self.campo_entrada_atual = None
+        # Variable to control which field is active
+        self.current_input_field = None
 
-        # Remover overlay após tudo estar pronto
+        # Remove overlay after everything is ready
         self.update_idletasks()
         self._overlay.destroy()
 
-    def validar_entrada_numerica(self, valor):
-        """Valida se a entrada contém apenas números e tem no máximo 8 caracteres"""
-        if len(valor) > 8:  # Limite de 8 caracteres
+    def validate_numeric_input(self, value):
+        """Validates if input contains only numbers and has at most 8 characters"""
+        if len(value) > 8:  # 8 character limit
             return False
-        if valor == "":  # Permite campo vazio para poder apagar
+        if value == "":  # Allow empty field for deletion
             return True
-        return valor.isdigit()
+        return value.isdigit()
 
-    def validar_entrada_nome(self, valor):
-        """Valida se o nome tem no máximo 26 caracteres"""
-        return len(valor) <= 26
+    def validate_name_input(self, value):
+        """Validates if name has at most 26 characters"""
+        return len(value) <= 26
 
-    def criar_topo(self):
+    def create_header(self):
         Header(self, "Cadastro de Usuário")
 
-    def criar_interface_cadastro(self):
-        # Frame principal que contém o formulário
-        frame_principal = customtkinter.CTkFrame(self, fg_color="transparent")
-        frame_principal.pack(side="left", fill="both", expand=True, padx=20, pady=(10, 20))
+    def create_registration_interface(self):
+        # Main frame containing the form
+        main_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        main_frame.pack(side="left", fill="both", expand=True, padx=20, pady=(10, 20))
 
-        # Frame para o formulário de cadastro
-        frame_cadastro = customtkinter.CTkFrame(frame_principal, fg_color="#3B6A7D")
-        frame_cadastro.pack(pady=(0, 20), padx=20, fill="x")
+        # Frame for registration form
+        registration_frame = customtkinter.CTkFrame(main_frame, fg_color="#3B6A7D")
+        registration_frame.pack(pady=(0, 20), padx=20, fill="x")
 
-        # Função para definir o campo de entrada atual quando clicado
-        def definir_campo_atual(entry):
-            self.campo_entrada_atual = entry
+        # Function to set current input field when clicked
+        def set_current_field(entry):
+            self.current_input_field = entry
             if hasattr(self, "teclado"):
-                self.teclado.definir_entrada(entry)
+                self.teclado.set_entry(entry)
 
         # Campo de Nome (aceita letras)
         customtkinter.CTkLabel(
-            frame_cadastro,
+            registration_frame,
             text="Nome (máx. 26 caracteres)",
             font=("Arial", 16, "bold"),
             text_color="white",
         ).pack(anchor="w", pady=(10, 5), padx=20)
 
-        self.nome_entry = customtkinter.CTkEntry(
-            frame_cadastro,
+        self.name_entry = customtkinter.CTkEntry(
+            registration_frame,
             width=300,
             height=40,
             font=("Arial", 14),
             validate="key",
-            validatecommand=self.vcmd_nome,
+            validatecommand=self.vcmd_name,
         )
-        self.nome_entry.pack(pady=(0, 10), padx=20)
-        self.nome_entry.bind("<Button-1>", lambda e: definir_campo_atual(self.nome_entry))
+        self.name_entry.pack(pady=(0, 10), padx=20)
+        self.name_entry.bind("<Button-1>", lambda e: set_current_field(self.name_entry))
 
         # Campo de Usuário (aceita apenas números)
         customtkinter.CTkLabel(
-            frame_cadastro,
+            registration_frame,
             text="Usuário (máx. 8 dígitos)",
             font=("Arial", 16, "bold"),
             text_color="white",
         ).pack(anchor="w", pady=(10, 5), padx=20)
 
-        self.usuario_entry = customtkinter.CTkEntry(
-            frame_cadastro,
+        self.username_entry = customtkinter.CTkEntry(
+            registration_frame,
             width=300,
             height=40,
             font=("Arial", 14),
             validate="key",
-            validatecommand=self.vcmd_numerico,
+            validatecommand=self.vcmd_numeric,
         )
-        self.usuario_entry.pack(pady=(0, 10), padx=20)
-        self.usuario_entry.bind("<Button-1>", lambda e: definir_campo_atual(self.usuario_entry))
+        self.username_entry.pack(pady=(0, 10), padx=20)
+        self.username_entry.bind("<Button-1>", lambda e: set_current_field(self.username_entry))
 
         # Campo de senha com mensagem de erro abaixo
         customtkinter.CTkLabel(
-            frame_cadastro,
+            registration_frame,
             text="Senha (máx. 8 dígitos)",
             font=("Arial", 16, "bold"),
             text_color="white",
         ).pack(anchor="w", pady=(10, 5), padx=20)
 
-        self.senha_entry = customtkinter.CTkEntry(
-            frame_cadastro,
+        self.password_entry = customtkinter.CTkEntry(
+            registration_frame,
             width=300,
             height=40,
             font=("Arial", 14),
             show="•",  # Mostra bolinhas no lugar dos caracteres
             validate="key",
-            validatecommand=self.vcmd_numerico,
+            validatecommand=self.vcmd_numeric,
         )
-        self.senha_entry.pack(pady=(0, 5), padx=20)
-        self.senha_entry.bind("<Button-1>", lambda e: definir_campo_atual(self.senha_entry))
+        self.password_entry.pack(pady=(0, 5), padx=20)
+        self.password_entry.bind("<Button-1>", lambda e: set_current_field(self.password_entry))
 
-        # Label para mensagem de erro (inicialmente vazia)
-        self.lbl_erro_senha = customtkinter.CTkLabel(
-            frame_cadastro,
+        # Label for error message (initially empty)
+        self.lbl_password_error = customtkinter.CTkLabel(
+            registration_frame,
             text="",
             text_color="red",
             font=("Arial", 12, "bold"),
             fg_color="transparent",
         )
-        self.lbl_erro_senha.pack(
+        self.lbl_password_error.pack(
             anchor="w", padx=20, pady=(0, 5)
         )  # Reduzido o padding vertical inferior
 
-        # Tipo de usuário
-        tipo_usuario_frame = customtkinter.CTkFrame(frame_cadastro, fg_color="transparent")
-        tipo_usuario_frame.pack(
+        # User type
+        user_type_frame = customtkinter.CTkFrame(registration_frame, fg_color="transparent")
+        user_type_frame.pack(
             anchor="w", fill="x", padx=20, pady=(0, 10)
         )  # Ajustado o padding vertical
 
         customtkinter.CTkLabel(
-            tipo_usuario_frame,
+            user_type_frame,
             text="Tipo de Usuário",
             font=("Arial", 16, "bold"),
             text_color="white",
         ).pack(anchor="w", pady=(0, 5), padx=20)
 
-        self.tipo_var = customtkinter.StringVar(value="vendedor")
-        tipos_usuarios = [
+        self.type_var = customtkinter.StringVar(value="vendedor")
+        user_types = [
             ("Vendedor", "vendedor"),
             ("Repositor", "repositor"),
             ("Administrador", "administrador"),
             ("Técnico", "tecnico"),
         ]
 
-        for texto, valor in tipos_usuarios:
+        for label, value in user_types:
             customtkinter.CTkRadioButton(
-                tipo_usuario_frame,
-                text=texto,
-                variable=self.tipo_var,
-                value=valor,
+                user_type_frame,
+                text=label,
+                variable=self.type_var,
+                value=value,
                 text_color="white",
             ).pack(anchor="w", padx=20, pady=2)
 
-        # Mensagem de status (para mensagens de sucesso/informação)
-        self.mensagem_label = customtkinter.CTkLabel(
-            frame_cadastro, text="", text_color="yellow", font=("Arial", 12)
+        # Status message (for success/info messages)
+        self.message_label = customtkinter.CTkLabel(
+            registration_frame, text="", text_color="yellow", font=("Arial", 12)
         )
-        self.mensagem_label.pack(pady=10, padx=20)
+        self.message_label.pack(pady=10, padx=20)
 
-        # Define o primeiro campo como ativo por padrão
-        if hasattr(self, "nome_entry"):
-            definir_campo_atual(self.nome_entry)
+        # Set first field as active by default
+        if hasattr(self, "name_entry"):
+            set_current_field(self.name_entry)
 
-    def criar_teclado_virtual(self):
-        # Frame para o teclado
-        frame_teclado = customtkinter.CTkFrame(
+    def create_virtual_keyboard(self):
+        # Frame for keyboard
+        keyboard_frame = customtkinter.CTkFrame(
             self, fg_color="transparent", width=600, height=750
-        )  # Largura e Altura fixa
-        frame_teclado.pack(side="right", fill="y", padx=20, pady=20)
-        frame_teclado.pack_propagate(False)  # Impede que o frame redimensione automaticamente
+        )  # Fixed width and height
+        keyboard_frame.pack(side="right", fill="y", padx=20, pady=20)
+        keyboard_frame.pack_propagate(False)  # Prevents frame from auto-resizing
 
-        # Título do teclado
-        customtkinter.CTkLabel(frame_teclado, text="").pack(pady=(0, 10))
+        # Keyboard title
+        customtkinter.CTkLabel(keyboard_frame, text="").pack(pady=(0, 10))
 
-        # Cria o teclado virtual dentro de um frame com rolagem se necessário
-        container = customtkinter.CTkFrame(frame_teclado, fg_color="transparent")
+        # Creates virtual keyboard inside frame with scroll if needed
+        container = customtkinter.CTkFrame(keyboard_frame, fg_color="transparent")
         container.pack(fill="both", expand=True)
 
         self.teclado = TecladoVirtual(
-            container, entrada_atual=self.campo_entrada_atual, comando_salvar=self.salvar_usuario
+            container, current_entry=self.current_input_field, save_command=self.save_user
         )
         self.teclado.pack(fill="both", expand=True, pady=10)
 
-    def criar_botao_voltar(self):
-        # Cria um frame para o botão de voltar no canto inferior esquerdo
-        frame_voltar = customtkinter.CTkFrame(self, fg_color="transparent")
-        frame_voltar.pack(side="bottom", anchor="sw", padx=20, pady=20)
-        VoltarButton(frame_voltar, self.voltar_callback)
+    def create_back_button(self):
+        # Creates frame for back button in bottom left corner
+        back_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        back_frame.pack(side="bottom", anchor="sw", padx=20, pady=20)
+        VoltarButton(back_frame, self.back_callback)
 
-    def salvar_usuario(self):
-        """Salva usuário usando UserRegistrationService"""
-        nome = self.nome_entry.get().strip()
-        usuario = self.usuario_entry.get().strip()
-        senha = self.senha_entry.get()
-        tipo = self.tipo_var.get()
+    def save_user(self):
+        """Saves user using UserRegistrationService"""
+        name = self.name_entry.get().strip()
+        username = self.username_entry.get().strip()
+        password = self.password_entry.get()
+        user_type = self.type_var.get()
 
-        # Limpa mensagens de erro anteriores
-        self.lbl_erro_senha.configure(text="")
+        # Clear previous error messages
+        self.lbl_password_error.configure(text="")
 
-        # Confirmar antes de salvar
+        # Confirm before saving
         if not ModernConfirmDialog.ask(
             self,
             "Confirmar Cadastro",
-            f"Deseja cadastrar o usuário '{nome}' do tipo '{tipo}'?",
+            f"Deseja cadastrar o usuário '{name}' do tipo '{user_type}'?",
             icon="question",
             confirm_text="Cadastrar",
             cancel_text="Cancelar",
         ):
             return
 
-        # Usa o serviço para registrar (validação + criação)
-        result = self.registration_service.register(nome, usuario, senha, tipo)
+        # Use service to register (validation + creation)
+        result = self.registration_service.register(name, username, password, user_type)
 
         if result.success:
             ToastNotification.show(self, result.message, "success")
-            self.limpar_campos()
+            self.clear_fields()
         else:
-            # Mostra primeiro erro
+            # Show first error
             error_msg = result.errors[0] if result.errors else result.message
-            self.mostrar_mensagem(error_msg, "erro")
+            self.show_message(error_msg, "erro")
 
-    def mostrar_mensagem(self, mensagem, tipo):
-        cores = {"erro": "red", "sucesso": "green", "info": "yellow"}
+    def show_message(self, message, msg_type):
+        colors = {"erro": "red", "sucesso": "green", "info": "yellow"}
 
-        # Cancela o temporizador anterior se existir
-        if tipo == "erro":
-            if self.erro_timer is not None:
-                self.after_cancel(self.erro_timer)
+        # Cancel previous timer if exists
+        if msg_type == "erro":
+            if self.error_timer is not None:
+                self.after_cancel(self.error_timer)
         else:
-            if self.mensagem_timer is not None:
-                self.after_cancel(self.mensagem_timer)
+            if self.message_timer is not None:
+                self.after_cancel(self.message_timer)
 
-        if tipo == "erro":
-            # Exibe a mensagem de erro no label apropriado
-            self.lbl_erro_senha.configure(text=mensagem, text_color=cores[tipo])
-            # Define um novo temporizador
-            self.erro_timer = self.after(5000, self.limpar_mensagem_erro)
+        if msg_type == "erro":
+            # Display error message in appropriate label
+            self.lbl_password_error.configure(text=message, text_color=colors[msg_type])
+            # Set a new timer
+            self.error_timer = self.after(5000, self.clear_error_message)
         else:
-            # Para outros tipos de mensagem (sucesso, info), usa o label normal
-            self.mensagem_label.configure(text=mensagem, text_color=cores.get(tipo, "white"))
-            self.mensagem_timer = self.after(5000, self.limpar_mensagem_normal)
+            # For other message types (success, info), use normal label
+            self.message_label.configure(text=message, text_color=colors.get(msg_type, "white"))
+            self.message_timer = self.after(5000, self.clear_normal_message)
 
-    def limpar_mensagem_erro(self):
-        self.lbl_erro_senha.configure(text="")
-        self.erro_timer = None
+    def clear_error_message(self):
+        self.lbl_password_error.configure(text="")
+        self.error_timer = None
 
-    def limpar_mensagem_normal(self):
-        self.mensagem_label.configure(text="")
-        self.mensagem_timer = None
+    def clear_normal_message(self):
+        self.message_label.configure(text="")
+        self.message_timer = None
 
-    def limpar_campos(self):
-        self.nome_entry.delete(0, tk.END)
-        self.usuario_entry.delete(0, tk.END)
-        self.senha_entry.delete(0, tk.END)
-        self.tipo_var.set("vendedor")
-        # Volta o foco para o primeiro campo
-        if hasattr(self, "nome_entry"):
-            self.nome_entry.focus_set()
-            self.campo_entrada_atual = self.nome_entry
+    def clear_fields(self):
+        self.name_entry.delete(0, tk.END)
+        self.username_entry.delete(0, tk.END)
+        self.password_entry.delete(0, tk.END)
+        self.type_var.set("vendedor")
+        # Return focus to first field
+        if hasattr(self, "name_entry"):
+            self.name_entry.focus_set()
+            self.current_input_field = self.name_entry
             if hasattr(self, "teclado"):
-                self.teclado.definir_entrada(self.nome_entry)
+                self.teclado.set_entry(self.name_entry)

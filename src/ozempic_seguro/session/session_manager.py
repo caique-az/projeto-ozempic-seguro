@@ -145,7 +145,7 @@ class SessionManager:
             if self._audit_callback:
                 try:
                     self._audit_callback(
-                        user_id, "SESSAO_EXPIRADA", "SESSOES", {"motivo": "timeout_inatividade"}
+                        user_id, "SESSION_EXPIRED", "SESSOES", {"motivo": "timeout_inatividade"}
                     )
                 except Exception as e:
                     logger.error(f"Error logging session expiration: {e}")

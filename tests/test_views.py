@@ -17,8 +17,8 @@ class TestLoginView:
         """Testa que LoginView tem os métodos necessários"""
         from ozempic_seguro.views.login_view import LoginFrame
 
-        assert hasattr(LoginFrame, "verificar_login")
-        assert hasattr(LoginFrame, "criar_interface_login")
+        assert hasattr(LoginFrame, "verify_login")
+        assert hasattr(LoginFrame, "create_login_interface")
 
 
 class TestComponentsView:

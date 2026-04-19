@@ -15,17 +15,17 @@ from ozempic_seguro.services.audit_view_service import (
 class TestAuditLogItem:
     """Testes para AuditLogItem"""
 
-    def test_data_hora_display(self):
-        """Testa formatação de data"""
+    def test_timestamp_display(self):
+        """Tests date formatting"""
         item = AuditLogItem(
             1, "2025-01-01 10:00:00", "user", "LOGIN", "usuarios", None, None, None, None
         )
-        assert item.data_hora_display == "2025-01-01 10:00:00"
+        assert item.timestamp_display == "2025-01-01 10:00:00"
 
-    def test_acao_display(self):
-        """Testa formatação de ação"""
+    def test_action_display(self):
+        """Tests action formatting"""
         item = AuditLogItem(1, "2025-01-01", "user", "login", "usuarios", None, None, None, None)
-        assert item.acao_display == "LOGIN"
+        assert item.action_display == "LOGIN"
 
 
 class TestAuditFilter:
@@ -35,15 +35,15 @@ class TestAuditFilter:
         """Testa filtro padrão de 7 dias"""
         filter = AuditFilter.default_last_7_days()
 
-        assert filter.data_inicio is not None
-        assert filter.data_fim is not None
+        assert filter.start_date is not None
+        assert filter.end_date is not None
 
     def test_empty_filter(self):
         """Testa filtro vazio"""
         filter = AuditFilter()
 
-        assert filter.acao is None
-        assert filter.data_inicio is None
+        assert filter.action is None
+        assert filter.start_date is None
 
 
 class TestPaginatedAuditResult:
@@ -83,7 +83,7 @@ class TestAuditViewService:
 
     def test_get_logs_with_filter(self):
         """Testa obtenção de logs com filtro"""
-        filter = AuditFilter(acao="LOGIN")
+        filter = AuditFilter(action="LOGIN")
         result = self.service.get_logs(filter=filter)
 
         assert isinstance(result, PaginatedAuditResult)
@@ -108,7 +108,7 @@ class TestAuditViewService:
         filter = self.service.get_default_filter()
 
         assert isinstance(filter, AuditFilter)
-        assert filter.data_inicio is not None
+        assert filter.start_date is not None
 
 
 class TestAuditViewServiceEdgeCases:
@@ -122,14 +122,14 @@ class TestAuditViewServiceEdgeCases:
 
     def test_get_logs_with_date_range(self):
         """Testa logs com intervalo de datas"""
-        filter = AuditFilter(data_inicio="2025-01-01", data_fim="2025-12-31")
+        filter = AuditFilter(start_date="2025-01-01", end_date="2025-12-31")
         result = self.service.get_logs(filter=filter)
 
         assert isinstance(result, PaginatedAuditResult)
 
     def test_get_logs_with_all_filters(self):
         """Testa logs com todos os filtros"""
-        filter = AuditFilter(acao="LOGIN", data_inicio="2025-01-01", data_fim="2025-12-31")
+        filter = AuditFilter(action="LOGIN", start_date="2025-01-01", end_date="2025-12-31")
         result = self.service.get_logs(filter=filter, page=2, per_page=5)
 
         assert isinstance(result, PaginatedAuditResult)
@@ -139,7 +139,7 @@ class TestAuditViewServiceEdgeCases:
     def test_get_logs_empty_result(self):
         """Testa logs com resultado vazio"""
         filter = AuditFilter(
-            acao="NONEXISTENT_ACTION", data_inicio="1990-01-01", data_fim="1990-12-31"
+            action="NONEXISTENT_ACTION", start_date="1990-01-01", end_date="1990-12-31"
         )
         result = self.service.get_logs(filter=filter)
 
@@ -150,10 +150,10 @@ class TestAuditViewServiceEdgeCases:
 class TestAuditLogItemEdgeCases:
     """Testes para casos extremos do AuditLogItem"""
 
-    def test_acao_display_uppercase(self):
-        """Testa ação já em maiúsculas"""
+    def test_action_display_uppercase(self):
+        """Tests action already uppercase"""
         item = AuditLogItem(1, "2025-01-01", "user", "LOGIN", "usuarios", None, None, None, None)
-        assert item.acao_display == "LOGIN"
+        assert item.action_display == "LOGIN"
 
     def test_with_dados_novos(self):
         """Testa com dados novos"""
@@ -175,14 +175,14 @@ class TestAuditFilterEdgeCases:
 
     def test_filter_with_todas_acao(self):
         """Testa filtro com ação 'Todas'"""
-        filter = AuditFilter(acao="Todas")
-        assert filter.acao == "Todas"
+        filter = AuditFilter(action="Todas")
+        assert filter.action == "Todas"
 
     def test_filter_date_formats(self):
         """Testa diferentes formatos de data"""
-        filter = AuditFilter(data_inicio="2025-01-01", data_fim="2025-12-31")
-        assert filter.data_inicio == "2025-01-01"
-        assert filter.data_fim == "2025-12-31"
+        filter = AuditFilter(start_date="2025-01-01", end_date="2025-12-31")
+        assert filter.start_date == "2025-01-01"
+        assert filter.end_date == "2025-12-31"
 
 
 class TestGetAuditViewService:

@@ -32,11 +32,11 @@ class UserService(BaseService):
 
     def create_user(
         self,
-        nome: str,
+        name: str,
         username: str,
-        senha: str,
-        tipo: str,
-        usuario_criador_id: Optional[int] = None,
+        password: str,
+        user_type: str,
+        creator_user_id: Optional[int] = None,
     ) -> Tuple[bool, str]:
         """
         Cadastra um novo usuário com validações robustas e registra log de auditoria.
@@ -46,13 +46,13 @@ class UserService(BaseService):
             UserAlreadyExistsError: Se o username já existir
         """
         # Validação robusta de entrada usando método da classe base
-        validation_data = {"username": username, "senha": senha, "nome": nome, "tipo": tipo}
+        validation_data = {"username": username, "senha": password, "nome": name, "tipo": user_type}
 
         if not self._validate_input(validation_data):
             raise InvalidUserDataError("input", "Dados de entrada inválidos ou incompletos")
 
         validation_result = Validators.validate_and_sanitize_user_input(
-            username=username, password=senha, name=nome, user_type=tipo
+            username=username, password=password, name=name, user_type=user_type
         )
 
         if not validation_result["valid"]:
@@ -61,37 +61,37 @@ class UserService(BaseService):
 
         # Usar dados sanitizados
         sanitized_data = validation_result["sanitized_data"]
-        nome_sanitizado = sanitized_data["name"]
-        username_sanitizado = sanitized_data["username"]
-        tipo_sanitizado = sanitized_data["user_type"]
+        sanitized_name = sanitized_data["name"]
+        sanitized_username = sanitized_data["username"]
+        sanitized_type = sanitized_data["user_type"]
 
         try:
-            novo_id = self.user_repo.create_user(
-                username_sanitizado, senha, nome_sanitizado, tipo_sanitizado
+            new_id = self.user_repo.create_user(
+                sanitized_username, password, sanitized_name, sanitized_type
             )
-            if not novo_id:
-                raise UserAlreadyExistsError(username_sanitizado)
+            if not new_id:
+                raise UserAlreadyExistsError(sanitized_username)
 
             # Log de criação com contexto de segurança
             security_context = SecurityLogger.log_user_management(
                 action="CREATE_USER",
-                admin_user_id=usuario_criador_id or novo_id,
+                admin_user_id=creator_user_id or new_id,
                 admin_username="system",
-                target_user_id=novo_id,
-                target_username=username_sanitizado,
+                target_user_id=new_id,
+                target_username=sanitized_username,
                 changes={
-                    "nome_completo": nome_sanitizado,
-                    "tipo": tipo_sanitizado,
+                    "nome_completo": sanitized_name,
+                    "tipo": sanitized_type,
                     "data_criacao": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 },
             )
             self.audit_repo.create_log(
-                usuario_id=usuario_criador_id or novo_id,
-                acao="CRIAR",
-                tabela_afetada="USUARIOS",
-                id_afetado=novo_id,
-                dados_novos=security_context,
-                endereco_ip=security_context.get("ip_address"),
+                user_id=creator_user_id or new_id,
+                action="CRIAR",
+                affected_table="USUARIOS",
+                id_afetado=new_id,
+                new_data=security_context,
+                ip_address=security_context.get("ip_address"),
             )
             return True, "Usuário cadastrado com sucesso!"
 
@@ -115,7 +115,7 @@ class UserService(BaseService):
 
         return True
 
-    def authenticate(self, username: str, senha: str, endereco_ip: Optional[str] = None) -> Dict[str, Any]:
+    def authenticate(self, username: str, password: str, ip_address: Optional[str] = None) -> Dict[str, Any]:
         """
         Autentica usuário com validação robusta, controle de força bruta e logs detalhados.
 
@@ -127,7 +127,7 @@ class UserService(BaseService):
             AccountLockedError: Se conta estiver bloqueada
         """
         # Validação básica - permite usuário "00" (admin padrão)
-        if not username or not senha:
+        if not username or not password:
             raise InvalidCredentialsError(username)
 
         # Sanitiza entrada
@@ -137,7 +137,7 @@ class UserService(BaseService):
         if username != "00":
             # Validação robusta apenas para outros usuários
             username_result = Validators.validate_username(username)
-            password_result = Validators.validate_password(senha, strict=False)
+            password_result = Validators.validate_password(password, strict=False)
             username_valid = username_result.is_valid
             username_error = username_result.errors[0] if username_result.errors else ""
             password_valid = password_result.is_valid
@@ -153,11 +153,11 @@ class UserService(BaseService):
                     },
                 )
                 self.audit_repo.create_log(
-                    usuario_id=None,
-                    acao="SECURITY_VIOLATION",
-                    tabela_afetada="USUARIOS",
-                    dados_anteriores=security_context,
-                    endereco_ip=security_context.get("ip_address"),
+                    user_id=None,
+                    action="SECURITY_VIOLATION",
+                    affected_table="USUARIOS",
+                    previous_data=security_context,
+                    ip_address=security_context.get("ip_address"),
                 )
                 raise InvalidCredentialsError(username, "Formato de usuário inválido")
 
@@ -177,15 +177,15 @@ class UserService(BaseService):
                 details={"remaining_lockout_minutes": remaining_time},
             )
             self.audit_repo.create_log(
-                usuario_id=None,
-                acao="LOGIN_BLOCKED",
-                tabela_afetada="USUARIOS",
-                dados_anteriores=security_context,
-                endereco_ip=security_context.get("ip_address"),
+                user_id=None,
+                action="LOGIN_BLOCKED",
+                affected_table="USUARIOS",
+                previous_data=security_context,
+                ip_address=security_context.get("ip_address"),
             )
             raise AccountLockedError(username, locked_until=f"{remaining_time} minutos")
 
-        user = self.user_repo.authenticate_user(username, senha)
+        user = self.user_repo.authenticate_user(username, password)
 
         if user:
             # Reset contador de tentativas em caso de sucesso
@@ -197,12 +197,12 @@ class UserService(BaseService):
             )
 
             self.audit_repo.create_log(
-                usuario_id=user["id"],
-                acao="LOGIN_SUCCESS",
-                tabela_afetada="USUARIOS",
+                user_id=user["id"],
+                action="LOGIN_SUCCESS",
+                affected_table="USUARIOS",
                 id_afetado=user["id"],
-                dados_novos=security_context,
-                endereco_ip=security_context.get("ip_address"),
+                new_data=security_context,
+                ip_address=security_context.get("ip_address"),
             )
             return dict(user)
         else:
@@ -215,30 +215,30 @@ class UserService(BaseService):
             )
 
             self.audit_repo.create_log(
-                usuario_id=None,
-                acao="LOGIN_FAILED",
-                tabela_afetada="USUARIOS",
-                dados_anteriores=security_context,
-                endereco_ip=security_context.get("ip_address"),
+                user_id=None,
+                action="LOGIN_FAILED",
+                affected_table="USUARIOS",
+                previous_data=security_context,
+                ip_address=security_context.get("ip_address"),
             )
             raise InvalidCredentialsError(username)
 
-    def logout(self, usuario_id: int, username: str, endereco_ip: Optional[str] = None) -> None:
+    def logout(self, user_id: int, username: str, ip_address: Optional[str] = None) -> None:
         """Registra logout de usuário com contexto de segurança."""
         security_context = SecurityLogger.log_session_event(
-            event_type="LOGOUT", user_id=usuario_id, username=username
+            event_type="LOGOUT", user_id=user_id, username=username
         )
 
         self.audit_repo.create_log(
-            usuario_id=usuario_id,
-            acao="LOGOUT",
-            tabela_afetada="USUARIOS",
-            id_afetado=usuario_id,
-            dados_novos=security_context,
-            endereco_ip=security_context.get("ip_address", endereco_ip),
+            user_id=user_id,
+            action="LOGOUT",
+            affected_table="USUARIOS",
+            id_afetado=user_id,
+            new_data=security_context,
+            ip_address=security_context.get("ip_address", ip_address),
         )
 
-    def delete_user(self, usuario_id: int) -> Tuple[bool, str]:
+    def delete_user(self, user_id: int) -> Tuple[bool, str]:
         """
         Exclui usuário e registra auditoria.
 
@@ -248,9 +248,9 @@ class UserService(BaseService):
             LastAdminError: Se tentar excluir único admin
         """
         # Verificar se usuário existe
-        user = self.user_repo.get_user_by_id(usuario_id)
+        user = self.user_repo.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(usuario_id)
+            raise UserNotFoundError(user_id)
 
         # Verificar se é um técnico
         if user.get("tipo") == "tecnico":
@@ -258,19 +258,19 @@ class UserService(BaseService):
                 action="excluir_usuario", required_role="administrador", user_role="tecnico"
             )
 
-        if self.user_repo.is_unique_admin(usuario_id):
+        if self.user_repo.is_unique_admin(user_id):
             raise LastAdminError()
 
-        sucesso = self.user_repo.delete_user(usuario_id)
-        if sucesso:
+        success = self.user_repo.delete_user(user_id)
+        if success:
             self.audit_repo.create_log(
-                usuario_id=usuario_id,
-                acao="EXCLUIR",
-                tabela_afetada="USUARIOS",
-                id_afetado=usuario_id,
+                user_id=user_id,
+                action="EXCLUIR",
+                affected_table="USUARIOS",
+                id_afetado=user_id,
             )
             return True, "Usuário excluído com sucesso!"
-        raise UserNotFoundError(usuario_id)
+        raise UserNotFoundError(user_id)
 
     def get_all_users(self) -> List[Dict[Any, Any]]:
         """Retorna lista de todos os usuários."""
@@ -278,7 +278,7 @@ class UserService(BaseService):
         return list(result) if result else []
 
     def update_password(
-        self, usuario_id: int, nova_senha: str, admin_user_id: Optional[int] = None
+        self, user_id: int, new_password: str, admin_user_id: Optional[int] = None
     ) -> Tuple[bool, str]:
         """
         Atualiza senha de usuário com validação robusta e registra auditoria.
@@ -289,9 +289,9 @@ class UserService(BaseService):
             WeakPasswordError: Se senha não atender requisitos
         """
         # Verificar se usuário existe
-        user = self.user_repo.get_user_by_id(usuario_id)
+        user = self.user_repo.get_user_by_id(user_id)
         if not user:
-            raise UserNotFoundError(usuario_id)
+            raise UserNotFoundError(user_id)
 
         # Verificar se é um técnico
         if user.get("tipo") == "tecnico":
@@ -300,7 +300,7 @@ class UserService(BaseService):
             )
 
         # Validação robusta da nova senha
-        password_result = Validators.validate_password(nova_senha, strict=False)
+        password_result = Validators.validate_password(new_password, strict=False)
         password_valid = password_result.is_valid
         password_error = password_result.errors[0] if password_result.errors else ""
 
@@ -308,42 +308,42 @@ class UserService(BaseService):
             raise WeakPasswordError([password_error])
 
         try:
-            sucesso = self.user_repo.update_password(usuario_id, nova_senha)
-            if sucesso:
+            success = self.user_repo.update_password(user_id, new_password)
+            if success:
                 # Log com contexto de segurança
                 security_context = SecurityLogger.log_user_management(
                     action="UPDATE_PASSWORD",
-                    admin_user_id=admin_user_id or usuario_id,
+                    admin_user_id=admin_user_id or user_id,
                     admin_username="system",
-                    target_user_id=usuario_id,
+                    target_user_id=user_id,
                     changes={"password_updated": True},
                 )
 
                 self.audit_repo.create_log(
-                    usuario_id=admin_user_id or usuario_id,
-                    acao="ATUALIZAR_SENHA",
-                    tabela_afetada="USUARIOS",
-                    id_afetado=usuario_id,
-                    dados_novos=security_context,
-                    endereco_ip=security_context.get("ip_address"),
+                    user_id=admin_user_id or user_id,
+                    action="ATUALIZAR_SENHA",
+                    affected_table="USUARIOS",
+                    id_afetado=user_id,
+                    new_data=security_context,
+                    ip_address=security_context.get("ip_address"),
                 )
                 return True, "Senha atualizada com sucesso"
-            raise UserNotFoundError(usuario_id)
+            raise UserNotFoundError(user_id)
         except (UserNotFoundError, InsufficientPermissionsError, WeakPasswordError):
             raise
         except Exception as e:
             # Log erro de segurança
             security_context = SecurityLogger.log_security_violation(
                 violation_type="PASSWORD_UPDATE_ERROR",
-                user_id=admin_user_id or usuario_id,
-                details={"error": str(e), "target_user_id": usuario_id},
+                user_id=admin_user_id or user_id,
+                details={"error": str(e), "target_user_id": user_id},
             )
             self.audit_repo.create_log(
-                usuario_id=admin_user_id or usuario_id,
-                acao="ERRO_ATUALIZAR_SENHA",
-                tabela_afetada="USUARIOS",
-                id_afetado=usuario_id,
-                dados_anteriores=security_context,
-                endereco_ip=security_context.get("ip_address"),
+                user_id=admin_user_id or user_id,
+                action="ERRO_ATUALIZAR_SENHA",
+                affected_table="USUARIOS",
+                id_afetado=user_id,
+                previous_data=security_context,
+                ip_address=security_context.get("ip_address"),
             )
             raise InvalidUserDataError("password", f"Erro ao atualizar senha: {str(e)}")

@@ -1,5 +1,5 @@
 """
-Componentes de gavetas: GavetaButton, GavetaButtonGrid
+Drawer components: GavetaButton, GavetaButtonGrid
 """
 import customtkinter
 from tkinter import messagebox
@@ -11,7 +11,7 @@ from ...services.timer_control_service import get_timer_control_service
 from ...services.auth_service import get_auth_service
 
 
-# Cache global de imagens de gavetas
+# Global cache for drawer images
 class _GavetaImageCache:
     _gaveta_aberta = None
     _gaveta_fechada = None
@@ -44,18 +44,18 @@ class _GavetaImageCache:
 
 
 class GavetaButton:
-    """Componente de botão de gaveta para a grade"""
+    """Drawer button component for the grid"""
 
-    def __init__(self, master, text, command=None, name=None, tipo_usuario=None):
+    def __init__(self, master, text, command=None, name=None, user_type=None):
         self.frame = customtkinter.CTkFrame(master, fg_color="transparent")
         self.frame.pack(expand=True, fill="both")
 
         self._gaveta_service = GavetaService.get_instance()
         self.timer_service = get_timer_control_service()
         self.auth_service = get_auth_service()
-        self.tipo_usuario = tipo_usuario
+        self.user_type = user_type
 
-        # Usar cache de imagens (muito mais rápido)
+        # Use image cache (much faster)
         self.gaveta_aberta = _GavetaImageCache.get_gaveta_aberta()
         self.gaveta_fechada = _GavetaImageCache.get_gaveta_fechada()
 
@@ -67,7 +67,7 @@ class GavetaButton:
             image=self.gaveta_fechada,
             fg_color="transparent",
             hover_color="#3B6A7D",
-            command=self.manipular_estado,
+            command=self.handle_state,
         )
         self.btn_gaveta.pack(pady=(0, 5))
 
@@ -78,61 +78,61 @@ class GavetaButton:
 
         self.command_original = command
         self.gaveta_id = text
-        self.atualizar_imagem()
+        self.update_image()
 
-    def atualizar_imagem(self):
-        """Atualiza a imagem do botão baseado no estado atual"""
-        esta_aberta = self._gaveta_service.get_state(int(self.gaveta_id))
-        self.btn_gaveta.configure(image=self.gaveta_aberta if esta_aberta else self.gaveta_fechada)
+    def update_image(self):
+        """Updates the button image based on current state"""
+        is_open = self._gaveta_service.get_state(int(self.gaveta_id))
+        self.btn_gaveta.configure(image=self.gaveta_aberta if is_open else self.gaveta_fechada)
 
-    def manipular_estado(self):
-        """Manipula o estado da gaveta baseado no tipo de usuário"""
-        estado_atual = self._gaveta_service.get_state(int(self.gaveta_id))
+    def handle_state(self):
+        """Handles the drawer state based on user type"""
+        current_state = self._gaveta_service.get_state(int(self.gaveta_id))
 
         current_user = self.auth_service.get_current_user()
         user_id = current_user.get("id") if current_user else None
 
-        if self.tipo_usuario == "administrador":
-            if not estado_atual:
-                self._abrir_gaveta_com_confirmacao()
+        if self.user_type == "administrador":
+            if not current_state:
+                self._open_drawer_with_confirmation()
             else:
-                sucesso, mensagem = self._gaveta_service.close_drawer(
-                    int(self.gaveta_id), self.tipo_usuario, user_id
+                success, message = self._gaveta_service.close_drawer(
+                    int(self.gaveta_id), self.user_type, user_id
                 )
-                messagebox.showinfo("Sucesso" if sucesso else "Aviso", mensagem)
-                if sucesso:
-                    self.atualizar_imagem()
+                messagebox.showinfo("Sucesso" if success else "Aviso", message)
+                if success:
+                    self.update_image()
 
-        elif self.tipo_usuario == "vendedor":
-            if not estado_atual:
-                self._abrir_gaveta_com_confirmacao()
+        elif self.user_type == "vendedor":
+            if not current_state:
+                self._open_drawer_with_confirmation()
             else:
                 messagebox.showwarning("Aviso", "Você não tem permissão para fechar gavetas")
 
-        elif self.tipo_usuario == "repositor":
-            if estado_atual:
-                sucesso, mensagem = self._gaveta_service.close_drawer(
-                    int(self.gaveta_id), self.tipo_usuario, user_id
+        elif self.user_type == "repositor":
+            if current_state:
+                success, message = self._gaveta_service.close_drawer(
+                    int(self.gaveta_id), self.user_type, user_id
                 )
-                messagebox.showinfo("Sucesso" if sucesso else "Aviso", mensagem)
-                if sucesso:
-                    self.atualizar_imagem()
+                messagebox.showinfo("Sucesso" if success else "Aviso", message)
+                if success:
+                    self.update_image()
             else:
                 messagebox.showwarning("Aviso", "Você não tem permissão para abrir gavetas")
         else:
             messagebox.showerror("Erro", "Tipo de usuário desconhecido")
 
-    def _abrir_gaveta_com_confirmacao(self):
-        """Mostra janela de confirmação antes de abrir a gaveta"""
+    def _open_drawer_with_confirmation(self):
+        """Shows confirmation window before opening the drawer"""
         if not self.timer_service.is_timer_enabled():
             current_user = self.auth_service.get_current_user()
             user_id = current_user.get("id") if current_user else None
-            sucesso, mensagem = self._gaveta_service.open_drawer(
-                int(self.gaveta_id), self.tipo_usuario, user_id
+            success, message = self._gaveta_service.open_drawer(
+                int(self.gaveta_id), self.user_type, user_id
             )
-            messagebox.showinfo("Sucesso" if sucesso else "Aviso", mensagem)
-            if sucesso:
-                self.atualizar_imagem()
+            messagebox.showinfo("Sucesso" if success else "Aviso", message)
+            if success:
+                self.update_image()
             return
 
         dialog = customtkinter.CTkToplevel()
@@ -153,7 +153,7 @@ class GavetaButton:
             main_frame, text="Confirmar Abertura", font=("Arial", 16, "bold"), text_color="black"
         ).pack(pady=(10, 5))
 
-        if self.tipo_usuario == "vendedor":
+        if self.user_type == "vendedor":
             mensagem = (
                 f"Deseja realmente abrir a gaveta {self.gaveta_id}?\n\n"
                 "O sistema será bloqueado por 5 minutos após a abertura.\n"
@@ -182,7 +182,7 @@ class GavetaButton:
             text="Confirmar",
             font=("Arial", 12, "bold"),
             width=120,
-            command=lambda: self._on_confirmar_abertura(dialog),
+            command=lambda: self._on_confirm_opening(dialog),
         ).pack(side="left", padx=10)
 
         customtkinter.CTkButton(
@@ -198,83 +198,83 @@ class GavetaButton:
         dialog.transient(self.frame.winfo_toplevel())
         dialog.wait_window(dialog)
 
-    def _on_confirmar_abertura(self, dialog):
-        """Confirma a abertura da gaveta"""
+    def _on_confirm_opening(self, dialog):
+        """Confirms the drawer opening"""
         dialog.destroy()
         current_user = self.auth_service.get_current_user()
         user_id = current_user.get("id") if current_user else None
 
-        sucesso, mensagem = self._gaveta_service.open_drawer(
-            int(self.gaveta_id), self.tipo_usuario, user_id
+        success, message = self._gaveta_service.open_drawer(
+            int(self.gaveta_id), self.user_type, user_id
         )
-        messagebox.showinfo("Sucesso" if sucesso else "Aviso", mensagem)
-        if sucesso:
-            self.atualizar_imagem()
+        messagebox.showinfo("Sucesso" if success else "Aviso", message)
+        if success:
+            self.update_image()
 
-    def mostrar_historico(self):
-        """Mostra o histórico de alterações da gaveta com paginação"""
-        self.itens_por_pagina = 20
-        self.pagina_atual = 1
+    def show_history(self):
+        """Shows the drawer change history with pagination"""
+        self.items_per_page = 20
+        self.current_page = 1
 
-        self.janela_historico = customtkinter.CTkToplevel()
-        self.janela_historico.title(f"Histórico - Gaveta {self.gaveta_id}")
-        self.janela_historico.geometry("600x400")
+        self.history_window = customtkinter.CTkToplevel()
+        self.history_window.title(f"Histórico - Gaveta {self.gaveta_id}")
+        self.history_window.geometry("600x400")
 
-        frame_principal = customtkinter.CTkFrame(self.janela_historico)
-        frame_principal.pack(fill="both", expand=True, padx=10, pady=10)
+        main_frame = customtkinter.CTkFrame(self.history_window)
+        main_frame.pack(fill="both", expand=True, padx=10, pady=10)
 
         customtkinter.CTkLabel(
-            frame_principal, text=f"Histórico - Gaveta {self.gaveta_id}", font=("Arial", 14, "bold")
+            main_frame, text=f"Histórico - Gaveta {self.gaveta_id}", font=("Arial", 14, "bold")
         ).pack(pady=(0, 10))
 
-        self.frame_historico = customtkinter.CTkScrollableFrame(
-            frame_principal, fg_color="transparent"
+        self.history_frame = customtkinter.CTkScrollableFrame(
+            main_frame, fg_color="transparent"
         )
-        self.frame_historico.pack(fill="both", expand=True)
+        self.history_frame.pack(fill="both", expand=True)
 
-        frame_controles = customtkinter.CTkFrame(frame_principal, fg_color="transparent")
-        frame_controles.pack(fill="x", pady=(5, 0))
+        controls_frame = customtkinter.CTkFrame(main_frame, fg_color="transparent")
+        controls_frame.pack(fill="x", pady=(5, 0))
 
-        self.btn_anterior = customtkinter.CTkButton(
-            frame_controles, text="Anterior", command=self._pagina_anterior, state="disabled"
+        self.btn_previous = customtkinter.CTkButton(
+            controls_frame, text="Anterior", command=self._previous_page, state="disabled"
         )
-        self.btn_anterior.pack(side="left", padx=5)
+        self.btn_previous.pack(side="left", padx=5)
 
-        self.lbl_pagina = customtkinter.CTkLabel(frame_controles, text="Página 1", width=100)
-        self.lbl_pagina.pack(side="left")
+        self.lbl_page = customtkinter.CTkLabel(controls_frame, text="Página 1", width=100)
+        self.lbl_page.pack(side="left")
 
-        self.btn_proximo = customtkinter.CTkButton(
-            frame_controles, text="Próximo", command=self._proxima_pagina
+        self.btn_next = customtkinter.CTkButton(
+            controls_frame, text="Próximo", command=self._next_page
         )
-        self.btn_proximo.pack(side="left", padx=5)
+        self.btn_next.pack(side="left", padx=5)
 
         customtkinter.CTkButton(
-            frame_controles, text="Fechar", command=self.janela_historico.destroy
+            controls_frame, text="Fechar", command=self.history_window.destroy
         ).pack(side="right")
 
-        self._carregar_historico()
+        self._load_history()
 
-    def _carregar_historico(self):
-        """Carrega os itens do histórico para a página atual usando GavetaService"""
-        for widget in self.frame_historico.winfo_children():
+    def _load_history(self):
+        """Loads history items for the current page using GavetaService"""
+        for widget in self.history_frame.winfo_children():
             widget.destroy()
 
-        offset = (self.pagina_atual - 1) * self.itens_por_pagina
+        offset = (self.current_page - 1) * self.items_per_page
         history_raw = self._gaveta_service.get_history_paginated(
-            int(self.gaveta_id), offset, self.itens_por_pagina
+            int(self.gaveta_id), offset, self.items_per_page
         )
         total = self._gaveta_service.count_history(int(self.gaveta_id))
-        total_paginas = max(1, (total + self.itens_por_pagina - 1) // self.itens_por_pagina)
+        total_pages = max(1, (total + self.items_per_page - 1) // self.items_per_page)
 
-        self.lbl_pagina.configure(text=f"Página {self.pagina_atual} de {total_paginas}")
-        self.btn_anterior.configure(state="disabled" if self.pagina_atual == 1 else "normal")
-        self.btn_proximo.configure(
-            state="disabled" if self.pagina_atual >= total_paginas else "normal"
+        self.lbl_page.configure(text=f"Página {self.current_page} de {total_pages}")
+        self.btn_previous.configure(state="disabled" if self.current_page == 1 else "normal")
+        self.btn_next.configure(
+            state="disabled" if self.current_page >= total_pages else "normal"
         )
 
         if not history_raw:
             customtkinter.CTkLabel(
-                self.frame_historico,
+                self.history_frame,
                 text="Nenhum registro de histórico para esta gaveta.",
                 text_color="gray",
             ).pack(pady=10)
@@ -289,7 +289,7 @@ class GavetaButton:
             data_hora = h[0] if h else ""
 
             frame_item = customtkinter.CTkFrame(
-                self.frame_historico, fg_color="#f0f0f0", corner_radius=5
+                self.history_frame, fg_color="#f0f0f0", corner_radius=5
             )
             frame_item.pack(fill="x", pady=2, padx=2)
 
@@ -300,18 +300,18 @@ class GavetaButton:
                 justify="left",
             ).pack(fill="x", padx=5, pady=5)
 
-    def _proxima_pagina(self):
-        self.pagina_atual += 1
-        self._carregar_historico()
+    def _next_page(self):
+        self.current_page += 1
+        self._load_history()
 
-    def _pagina_anterior(self):
-        if self.pagina_atual > 1:
-            self.pagina_atual -= 1
-            self._carregar_historico()
+    def _previous_page(self):
+        if self.current_page > 1:
+            self.current_page -= 1
+            self._load_history()
 
 
 class GavetaButtonGrid(customtkinter.CTkFrame):
-    """Componente de grade de botões com imagens de gavetas"""
+    """Button grid component with drawer images"""
 
     def __init__(self, master, button_data):
         super().__init__(master, fg_color="transparent")
@@ -337,41 +337,41 @@ class GavetaButtonGrid(customtkinter.CTkFrame):
         for j in range(self.cols):
             self.grid_frame.columnconfigure(j, weight=1)
 
-        self.criar_controles_navegacao()
-        self.mostrar_pagina(0)
+        self.create_navigation_controls()
+        self.show_page(0)
 
-    def criar_controles_navegacao(self):
-        """Cria os controles de navegação entre páginas"""
+    def create_navigation_controls(self):
+        """Creates navigation controls between pages"""
         self.btn_frame = customtkinter.CTkFrame(self.nav_frame, fg_color="transparent")
         self.btn_frame.pack(side="left", anchor="w", padx=10)
 
-        self.btn_anterior = customtkinter.CTkButton(
+        self.btn_previous = customtkinter.CTkButton(
             self.btn_frame,
             text="← Anterior",
-            command=self.pagina_anterior,
+            command=self.previous_page,
             width=120,
             state="disabled",
         )
-        self.btn_anterior.pack(side="left", padx=(0, 5))
+        self.btn_previous.pack(side="left", padx=(0, 5))
 
-        self.btn_proximo = customtkinter.CTkButton(
-            self.btn_frame, text="Próxima →", command=self.proxima_pagina, width=120
+        self.btn_next = customtkinter.CTkButton(
+            self.btn_frame, text="Próxima →", command=self.next_page, width=120
         )
-        self.btn_proximo.pack(side="left")
+        self.btn_next.pack(side="left")
 
         if self.total_pages <= 1:
             self.nav_frame.pack_forget()
 
-    def pagina_anterior(self):
+    def previous_page(self):
         if self.current_page > 0:
-            self.mostrar_pagina(self.current_page - 1)
+            self.show_page(self.current_page - 1)
 
-    def proxima_pagina(self):
+    def next_page(self):
         if self.current_page < self.total_pages - 1:
-            self.mostrar_pagina(self.current_page + 1)
+            self.show_page(self.current_page + 1)
 
-    def mostrar_pagina(self, page_num):
-        """Mostra a página especificada"""
+    def show_page(self, page_num):
+        """Shows the specified page"""
         if page_num < 0 or page_num >= self.total_pages:
             return
 
@@ -399,15 +399,15 @@ class GavetaButtonGrid(customtkinter.CTkFrame):
                         text=btn_data["text"],
                         command=btn_data["command"],
                         name=btn_data["name"],
-                        tipo_usuario=btn_data["tipo_usuario"],
+                        user_type=btn_data["user_type"],
                     )
 
-        self.atualizar_controles_navegacao()
+        self.update_navigation_controls()
 
-    def atualizar_controles_navegacao(self):
-        """Atualiza o estado dos controles de navegação"""
-        if hasattr(self, "btn_anterior") and hasattr(self, "btn_proximo"):
-            self.btn_anterior.configure(state="normal" if self.current_page > 0 else "disabled")
-            self.btn_proximo.configure(
+    def update_navigation_controls(self):
+        """Updates the navigation controls state"""
+        if hasattr(self, "btn_previous") and hasattr(self, "btn_next"):
+            self.btn_previous.configure(state="normal" if self.current_page > 0 else "disabled")
+            self.btn_next.configure(
                 state="normal" if self.current_page < self.total_pages - 1 else "disabled"
             )

@@ -29,9 +29,9 @@ def _setup_audit_callback() -> None:
 
     audit_service = AuditService()
 
-    def audit_callback(user_id: int, acao: str, tabela: str, dados: dict) -> None:
+    def audit_callback(user_id: int, action: str, table: str, data: dict) -> None:
         audit_service.create_log(
-            usuario_id=user_id, acao=acao, tabela_afetada=tabela, dados_anteriores=dados
+            user_id=user_id, action=action, affected_table=table, previous_data=data
         )
 
     SessionManager.set_audit_callback(audit_callback)
@@ -42,13 +42,13 @@ class MainApp(customtkinter.CTk):
         super().__init__()
         from .config import UIConfig, AppConfig
 
-        # Esconder janela durante inicialização
+        # Hide window during initialization
         self.withdraw()
 
-        # Pré-carregar imagens para acelerar renderização
+        # Pre-load images to speed up rendering
         _preload_images()
 
-        # Configura callback de auditoria primeiro
+        # Configure audit callback first
         _setup_audit_callback()
 
         self.title(AppConfig.APP_NAME)
@@ -57,66 +57,66 @@ class MainApp(customtkinter.CTk):
         customtkinter.set_appearance_mode(UIConfig.THEME_MODE)
         customtkinter.set_default_color_theme(UIConfig.THEME_COLOR)
 
-        # Container principal para todas as telas
+        # Main container for all screens
         self.container = customtkinter.CTkFrame(self)
         self.container.pack(fill="both", expand=True)
 
-        # Controlador de navegação - inicialização direta
+        # Navigation controller - direct initialization
         self.nav_controller = NavigationController(self)
         self.nav_controller.preload_frames()
-        self.nav_controller.show_tela_toque()
+        self.nav_controller.show_touch_screen()
 
-        # Forçar renderização completa antes de mostrar
+        # Force complete rendering before showing
         self.update_idletasks()
         self.update()
 
-        # Mostrar janela após tudo estar pronto
+        # Show window after everything is ready
         self.deiconify()
 
-        self.nav_controller.start_alternancia()
+        self.nav_controller.start_alternation()
 
-        # Configurar encerramento adequado da aplicação
+        # Configure proper application shutdown
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
     def on_closing(self):
-        """Encerra a aplicação de forma adequada, limpando todos os recursos"""
+        """Shuts down the application properly, cleaning all resources"""
         try:
-            # Parar navegação controller se existir
+            # Stop navigation controller if exists
             if hasattr(self, "nav_controller") and self.nav_controller:
                 self.nav_controller.cleanup()
 
-            # Limpar session manager
+            # Clean session manager
             from .session.session_manager import SessionManager
 
             session = SessionManager.get_instance()
             session.cleanup()
 
-            # Destruir janela principal
+            # Destroy main window
             self.destroy()
 
-            # Forçar encerramento se necessário
+            # Force shutdown if needed
             import sys
 
             sys.exit(0)
 
         except Exception as e:
-            logger.error(f"Erro ao encerrar aplicação: {e}")
-            # Forçar encerramento mesmo com erro
+            logger.error(f"Error closing application: {e}")
+            # Force shutdown even with error
             import sys
 
             sys.exit(1)
 
 
 def main():
-    """Função principal para iniciar a aplicação"""
+    """Main function to start the application"""
     try:
         app = MainApp()
         app.mainloop()
     except KeyboardInterrupt:
-        # Encerramento via Ctrl+C ou fechamento abrupto
+        # Shutdown via Ctrl+C or abrupt close
         pass
     except Exception as e:
-        logger.error(f"Erro fatal na aplicação: {e}")
+        logger.error(f"Fatal application error: {e}")
 
 
 if __name__ == "__main__":

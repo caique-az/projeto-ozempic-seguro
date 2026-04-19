@@ -25,7 +25,7 @@ class TestUserRegistrationService:
         unique_username = str(uuid.uuid4().int)[:8]
 
         result = self.service.register(
-            nome="Test User", username=unique_username, senha="1234", tipo="vendedor"
+            name="Test User", username=unique_username, password="1234", user_type="vendedor"
         )
 
         assert isinstance(result, RegistrationResult)
@@ -33,14 +33,14 @@ class TestUserRegistrationService:
 
     def test_register_empty_name(self):
         """Testa registro com nome vazio"""
-        result = self.service.register(nome="", username="12345678", senha="1234", tipo="vendedor")
+        result = self.service.register(name="", username="12345678", password="1234", user_type="vendedor")
 
         assert result.success is False
         assert len(result.errors) > 0
 
     def test_register_empty_username(self):
         """Testa registro com username vazio"""
-        result = self.service.register(nome="Test User", username="", senha="1234", tipo="vendedor")
+        result = self.service.register(name="Test User", username="", password="1234", user_type="vendedor")
 
         assert result.success is False
         assert len(result.errors) > 0
@@ -48,7 +48,7 @@ class TestUserRegistrationService:
     def test_register_empty_password(self):
         """Testa registro com senha vazia"""
         result = self.service.register(
-            nome="Test User", username="12345678", senha="", tipo="vendedor"
+            name="Test User", username="12345678", password="", user_type="vendedor"
         )
 
         assert result.success is False
@@ -57,9 +57,9 @@ class TestUserRegistrationService:
     def test_register_name_too_long(self):
         """Testa registro com nome muito longo"""
         result = self.service.register(
-            nome="A" * 30,  # Mais de 26 caracteres
+            name="A" * 30,  # Mais de 26 caracteres
             username="12345678",
-            senha="1234",
+            password="1234",
             tipo="vendedor",
         )
 
@@ -69,10 +69,10 @@ class TestUserRegistrationService:
     def test_register_username_too_long(self):
         """Testa registro com username muito longo"""
         result = self.service.register(
-            nome="Test User",
-            username="123456789",  # Mais de 8 dígitos
-            senha="1234",
-            tipo="vendedor",
+            name="Test User",
+            username="123456789",  # More than 8 digits
+            password="1234",
+            user_type="vendedor",
         )
 
         assert result.success is False
@@ -81,7 +81,7 @@ class TestUserRegistrationService:
     def test_register_username_not_numeric(self):
         """Testa registro com username não numérico"""
         result = self.service.register(
-            nome="Test User", username="abc12345", senha="1234", tipo="vendedor"
+            name="Test User", username="abc12345", password="1234", user_type="vendedor"
         )
 
         assert result.success is False
@@ -90,10 +90,10 @@ class TestUserRegistrationService:
     def test_register_password_too_short(self):
         """Testa registro com senha muito curta"""
         result = self.service.register(
-            nome="Test User",
+            name="Test User",
             username="12345678",
-            senha="123",  # Menos de 4 caracteres
-            tipo="vendedor",
+            password="123",  # Less than 4 characters
+            user_type="vendedor",
         )
 
         assert result.success is False
@@ -102,10 +102,10 @@ class TestUserRegistrationService:
     def test_register_password_too_long(self):
         """Testa registro com senha muito longa"""
         result = self.service.register(
-            nome="Test User",
+            name="Test User",
             username="12345678",
-            senha="123456789",  # Mais de 8 dígitos
-            tipo="vendedor",
+            password="123456789",  # More than 8 digits
+            user_type="vendedor",
         )
 
         assert result.success is False
@@ -114,7 +114,7 @@ class TestUserRegistrationService:
     def test_register_password_not_numeric(self):
         """Testa registro com senha não numérica"""
         result = self.service.register(
-            nome="Test User", username="12345678", senha="abc1", tipo="vendedor"
+            name="Test User", username="12345678", password="abc1", user_type="vendedor"
         )
 
         assert result.success is False
@@ -123,7 +123,7 @@ class TestUserRegistrationService:
     def test_register_invalid_type(self):
         """Testa registro com tipo inválido"""
         result = self.service.register(
-            nome="Test User", username="12345678", senha="1234", tipo="invalid_type"
+            name="Test User", username="12345678", password="1234", user_type="invalid_type"
         )
 
         assert result.success is False

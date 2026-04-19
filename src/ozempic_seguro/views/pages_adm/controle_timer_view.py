@@ -11,8 +11,8 @@ from ...services.auth_service import get_auth_service
 class ControleTimerFrame(customtkinter.CTkFrame):
     BG_COLOR = "#3B6A7D"
 
-    def __init__(self, master, voltar_callback=None, *args, **kwargs):
-        self.voltar_callback = voltar_callback
+    def __init__(self, master, back_callback=None, *args, **kwargs):
+        self.back_callback = back_callback
         self.timer_service = get_timer_control_service()
         self.auth_service = get_auth_service()
         super().__init__(master, fg_color=self.BG_COLOR, *args, **kwargs)
@@ -33,17 +33,17 @@ class ControleTimerFrame(customtkinter.CTkFrame):
         self.main_content.pack(fill="both", expand=True, padx=20, pady=(20, 80))
 
         # Criar controle de timer
-        self.criar_controle_timer()
+        self.create_timer_control()
 
         # Criar botão voltar
-        self.criar_botao_voltar()
+        self.create_back_button()
 
         # Remover overlay após tudo estar pronto
         self.update_idletasks()
         self._overlay.destroy()
 
-    def criar_controle_timer(self):
-        """Cria o controle para ativar/desativar o timer"""
+    def create_timer_control(self):
+        """Creates control to enable/disable timer"""
         # Frame central para o controle
         frame_central = customtkinter.CTkFrame(
             self.main_content, fg_color="white", corner_radius=15
@@ -88,7 +88,7 @@ class ControleTimerFrame(customtkinter.CTkFrame):
             width=200,
             height=50,
             font=("Arial", 14, "bold"),
-            command=self.alternar_timer,
+            command=self.toggle_timer,
         )
         self.btn_controle.pack(pady=20)
 
@@ -103,13 +103,13 @@ class ControleTimerFrame(customtkinter.CTkFrame):
         lbl_info.pack(pady=(10, 20), padx=20)
 
         # Atualizar estado inicial
-        self.atualizar_estado()
+        self.update_state()
 
-    def alternar_timer(self):
-        """Alterna o estado do timer usando TimerControlService"""
+    def toggle_timer(self):
+        """Toggles the timer state using TimerControlService"""
         # Verifica se o usuário é técnico
-        usuario = self.auth_service.get_current_user()
-        if not usuario or usuario.get("tipo") != "tecnico":
+        user = self.auth_service.get_current_user()
+        if not user or user.get("tipo") != "tecnico":
             ToastNotification.show(self, "Acesso negado! Apenas técnicos podem alterar.", "error")
             return
 
@@ -128,39 +128,39 @@ class ControleTimerFrame(customtkinter.CTkFrame):
                 success, msg = self.timer_service.disable_timer()
                 if success:
                     ToastNotification.show(self, "Timer DESATIVADO!", "warning")
-                self.atualizar_estado()
+                self.update_state()
         else:
             # Vai ativar - sem confirmação necessária
             success, msg = self.timer_service.enable_timer()
             if success:
                 ToastNotification.show(self, "Timer ATIVADO com sucesso!", "success")
-            self.atualizar_estado()
+            self.update_state()
 
-    def atualizar_estado(self):
-        """Atualiza a interface de acordo com o estado do timer"""
+    def update_state(self):
+        """Updates interface according to timer state"""
         status = self.timer_service.get_status()
-        timer_ativo = status.enabled
+        timer_active = status.enabled
 
-        if timer_ativo:
-            # Timer ativado - fundo verde claro
+        if timer_active:
+            # Timer enabled - light green background
             self.frame_status.configure(fg_color="#E8F5E9")
             self.lbl_status.configure(text="🟢 Timer ATIVADO", text_color="#2E7D32")
             self.btn_controle.configure(
                 text="Desativar Timer", fg_color="#F44336", hover_color="#D32F2F"
             )
         else:
-            # Timer desativado - fundo vermelho claro
+            # Timer disabled - light red background
             self.frame_status.configure(fg_color="#FFEBEE")
             self.lbl_status.configure(text="🔴 Timer DESATIVADO", text_color="#C62828")
             self.btn_controle.configure(
                 text="Ativar Timer", fg_color="#4CAF50", hover_color="#388E3C"
             )
 
-        # Forçar atualização visual
+        # Force visual update
         self.frame_status.update()
         self.lbl_status.update()
         self.btn_controle.update()
 
-    def criar_botao_voltar(self):
-        """Cria o botão voltar"""
-        VoltarButton(self, self.voltar_callback)
+    def create_back_button(self):
+        """Creates back button"""
+        VoltarButton(self, self.back_callback)

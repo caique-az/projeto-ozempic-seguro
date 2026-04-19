@@ -25,50 +25,50 @@ class UserData:
 
     id: int
     username: str
-    nome_completo: str
-    tipo: str
-    ativo: bool
-    data_criacao: str
+    full_name: str
+    user_type: str
+    active: bool
+    created_at: str
 
     @property
-    def is_tecnico(self) -> bool:
+    def is_technician(self) -> bool:
         """Verifica se é usuário técnico"""
-        return self.tipo.lower() == "tecnico"
+        return self.user_type.lower() == "tecnico"
 
     @property
     def is_admin(self) -> bool:
         """Verifica se é administrador"""
-        return self.tipo.lower() == "administrador"
+        return self.user_type.lower() == "administrador"
 
     @property
     def can_be_modified(self) -> bool:
         """Verifica se pode ser modificado"""
-        return not self.is_tecnico
+        return not self.is_technician
 
     @property
     def can_be_deleted(self) -> bool:
         """Verifica se pode ser excluído"""
-        return not self.is_tecnico
+        return not self.is_technician
 
     @property
-    def tipo_display(self) -> str:
+    def user_type_display(self) -> str:
         """Retorna tipo formatado para exibição"""
-        return self.tipo.capitalize()
+        return self.user_type.capitalize()
 
     @property
     def status_display(self) -> str:
         """Retorna status formatado para exibição"""
-        return "Ativo" if self.ativo else "Inativo"
+        return "Ativo" if self.active else "Inativo"
 
     @property
-    def data_criacao_display(self) -> str:
+    def created_at_display(self) -> str:
         """Retorna data formatada para exibição"""
         try:
-            if self.data_criacao and isinstance(self.data_criacao, str):
+            if self.created_at and isinstance(self.created_at, str):
                 return (
-                    self.data_criacao.split(" ")[0]
-                    if " " in self.data_criacao
-                    else self.data_criacao
+                    self.created_at.split(" ")[0]
+                    if " " in self.created_at
+                    else self.created_at
                 )
             return "N/A"
         except (ValueError, AttributeError, IndexError):
@@ -107,10 +107,10 @@ class UserManagementService:
                 UserData(
                     id=u[0],
                     username=u[1],
-                    nome_completo=u[2],
-                    tipo=u[3],
-                    ativo=u[4],
-                    data_criacao=u[5],
+                    full_name=u[2],
+                    user_type=u[3],
+                    active=u[4],
+                    created_at=u[5],
                 )
                 for u in usuarios
             ]

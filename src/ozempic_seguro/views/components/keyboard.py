@@ -1,11 +1,11 @@
 """
-Componente de teclado virtual: TecladoVirtual
+Virtual keyboard component: TecladoVirtual
 """
 import customtkinter
 
 
 class TecladoVirtual(customtkinter.CTkFrame):
-    """Teclado virtual para entrada de dados"""
+    """Virtual keyboard for data entry"""
 
     LAYOUT = [
         ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
@@ -15,68 +15,68 @@ class TecladoVirtual(customtkinter.CTkFrame):
         ["MAIÚSCULAS", "LIMPAR", "ESPAÇO"],
     ]
 
-    def __init__(self, master, entrada_atual=None, comando_salvar=None, **kwargs):
+    def __init__(self, master, current_entry=None, save_command=None, **kwargs):
         super().__init__(master, fg_color="#f0f0f0", corner_radius=10, **kwargs)
-        self.entrada_atual = entrada_atual
-        self.comando_salvar = comando_salvar
-        self.maiusculas_ativado = False
-        self.btn_maiusculas = None
-        self.criar_teclado()
+        self.current_entry = current_entry
+        self.save_command = save_command
+        self.uppercase_enabled = False
+        self.btn_uppercase = None
+        self.create_keyboard()
 
-    def criar_teclado(self):
-        """Cria o layout do teclado"""
-        for i, linha in enumerate(self.LAYOUT):
+    def create_keyboard(self):
+        """Creates the keyboard layout"""
+        for i, row in enumerate(self.LAYOUT):
             self.grid_rowconfigure(i, weight=1)
 
-            if i == len(self.LAYOUT) - 2:  # Penúltima linha
-                self._criar_linha_com_acoes(i, linha)
-            elif i == len(self.LAYOUT) - 1:  # Última linha
-                self._criar_linha_funcoes(i)
+            if i == len(self.LAYOUT) - 2:  # Second to last row
+                self._create_row_with_actions(i, row)
+            elif i == len(self.LAYOUT) - 1:  # Last row
+                self._create_function_row(i)
             else:
-                self._criar_linha_normal(i, linha)
+                self._create_normal_row(i, row)
 
-    def _criar_linha_normal(self, row, linha):
-        """Cria uma linha normal de teclas"""
+    def _create_normal_row(self, row, keys):
+        """Creates a normal row of keys"""
         for j in range(10):
             self.grid_columnconfigure(j, weight=1)
 
-        for j, tecla in enumerate(linha):
-            tecla_exibida = tecla.upper() if self.maiusculas_ativado and tecla.isalpha() else tecla
+        for j, key in enumerate(keys):
+            displayed_key = key.upper() if self.uppercase_enabled and key.isalpha() else key
 
             btn = customtkinter.CTkButton(
                 self,
-                text=tecla_exibida,
+                text=displayed_key,
                 height=40,
                 font=("Arial", 12, "bold"),
                 fg_color="#ffffff",
                 text_color="#000000",
                 hover_color="#e0e0e0",
                 corner_radius=5,
-                command=lambda t=tecla: self.tecla_pressionada(t),
+                command=lambda t=key: self.key_pressed(t),
             )
             btn.grid(row=row, column=j, padx=2, pady=2, sticky="nsew")
 
-    def _criar_linha_com_acoes(self, row, linha):
-        """Cria a penúltima linha com botões de ação"""
+    def _create_row_with_actions(self, row, keys):
+        """Creates the second to last row with action buttons"""
         for j in range(10):
             self.grid_columnconfigure(j, weight=1)
 
         # Letras
-        for j, tecla in enumerate(linha):
+        for j, key in enumerate(keys):
             btn = customtkinter.CTkButton(
                 self,
-                text=tecla.upper() if self.maiusculas_ativado else tecla,
+                text=key.upper() if self.uppercase_enabled else key,
                 height=40,
                 font=("Arial", 12, "bold"),
                 fg_color="#ffffff",
                 text_color="#000000",
                 hover_color="#e0e0e0",
                 corner_radius=5,
-                command=lambda t=tecla: self.tecla_pressionada(t),
+                command=lambda t=key: self.key_pressed(t),
             )
             btn.grid(row=row, column=j, padx=2, pady=2, sticky="nsew")
 
-        # Botão SALVAR
+        # SAVE button
         btn_salvar = customtkinter.CTkButton(
             self,
             text="SALVAR",
@@ -86,11 +86,11 @@ class TecladoVirtual(customtkinter.CTkFrame):
             text_color="white",
             hover_color="#27ae60",
             corner_radius=5,
-            command=lambda: self.tecla_pressionada("SALVAR"),
+            command=lambda: self.key_pressed("SALVAR"),
         )
         btn_salvar.grid(row=row, column=7, columnspan=2, padx=2, pady=2, sticky="nsew")
 
-        # Botão Apagar
+        # Delete button
         btn_apagar = customtkinter.CTkButton(
             self,
             text="⌫",
@@ -100,28 +100,28 @@ class TecladoVirtual(customtkinter.CTkFrame):
             text_color="white",
             hover_color="#c0392b",
             corner_radius=5,
-            command=lambda: self.tecla_pressionada("⌫"),
+            command=lambda: self.key_pressed("⌫"),
         )
         btn_apagar.grid(row=row, column=9, padx=2, pady=2, sticky="nsew")
 
-    def _criar_linha_funcoes(self, row):
-        """Cria a última linha com botões de função"""
+    def _create_function_row(self, row):
+        """Creates the last row with function buttons"""
         for j in range(10):
             self.grid_columnconfigure(j, weight=1)
 
         # MAIÚSCULAS
-        self.btn_maiusculas = customtkinter.CTkButton(
+        self.btn_uppercase = customtkinter.CTkButton(
             self,
             text="MAIÚSCULAS",
             height=40,
             font=("Arial", 12, "bold"),
-            fg_color="#3498db" if self.maiusculas_ativado else "#ffffff",
-            text_color="#ffffff" if self.maiusculas_ativado else "#000000",
-            hover_color="#2980b9" if self.maiusculas_ativado else "#e0e0e0",
+            fg_color="#3498db" if self.uppercase_enabled else "#ffffff",
+            text_color="#ffffff" if self.uppercase_enabled else "#000000",
+            hover_color="#2980b9" if self.uppercase_enabled else "#e0e0e0",
             corner_radius=5,
-            command=lambda: self.tecla_pressionada("MAIÚSCULAS"),
+            command=lambda: self.key_pressed("MAIÚSCULAS"),
         )
-        self.btn_maiusculas.grid(row=row, column=0, columnspan=2, padx=2, pady=2, sticky="nsew")
+        self.btn_uppercase.grid(row=row, column=0, columnspan=2, padx=2, pady=2, sticky="nsew")
 
         # LIMPAR
         customtkinter.CTkButton(
@@ -133,7 +133,7 @@ class TecladoVirtual(customtkinter.CTkFrame):
             text_color="#000000",
             hover_color="#e0e0e0",
             corner_radius=5,
-            command=lambda: self.tecla_pressionada("LIMPAR"),
+            command=lambda: self.key_pressed("LIMPAR"),
         ).grid(row=row, column=2, columnspan=2, padx=2, pady=2, sticky="nsew")
 
         # ESPAÇO
@@ -146,40 +146,40 @@ class TecladoVirtual(customtkinter.CTkFrame):
             text_color="#000000",
             hover_color="#e0e0e0",
             corner_radius=5,
-            command=lambda: self.tecla_pressionada(" "),
+            command=lambda: self.key_pressed(" "),
         ).grid(row=row, column=4, columnspan=6, padx=2, pady=2, sticky="nsew")
 
-    def tecla_pressionada(self, tecla):
-        """Processa a tecla pressionada"""
-        if not self.entrada_atual:
+    def key_pressed(self, key):
+        """Processes the pressed key"""
+        if not self.current_entry:
             return
 
-        if tecla == "⌫":
-            texto_atual = self.entrada_atual.get()
-            self.entrada_atual.delete(0, "end")
-            self.entrada_atual.insert(0, texto_atual[:-1])
-        elif tecla == "LIMPAR":
-            self.entrada_atual.delete(0, "end")
-        elif tecla == "SALVAR" and self.comando_salvar:
-            self.comando_salvar()
-        elif tecla == "MAIÚSCULAS":
-            self.maiusculas_ativado = not self.maiusculas_ativado
+        if key == "⌫":
+            current_text = self.current_entry.get()
+            self.current_entry.delete(0, "end")
+            self.current_entry.insert(0, current_text[:-1])
+        elif key == "LIMPAR":
+            self.current_entry.delete(0, "end")
+        elif key == "SALVAR" and self.save_command:
+            self.save_command()
+        elif key == "MAIÚSCULAS":
+            self.uppercase_enabled = not self.uppercase_enabled
 
-            if self.btn_maiusculas:
-                self.btn_maiusculas.configure(
-                    fg_color="#3498db" if self.maiusculas_ativado else "#ffffff",
-                    text_color="#ffffff" if self.maiusculas_ativado else "#000000",
-                    hover_color="#2980b9" if self.maiusculas_ativado else "#e0e0e0",
+            if self.btn_uppercase:
+                self.btn_uppercase.configure(
+                    fg_color="#3498db" if self.uppercase_enabled else "#ffffff",
+                    text_color="#ffffff" if self.uppercase_enabled else "#000000",
+                    hover_color="#2980b9" if self.uppercase_enabled else "#e0e0e0",
                 )
 
-            # Reconstrói o teclado
+            # Rebuild the keyboard
             for widget in self.winfo_children():
                 widget.destroy()
-            self.criar_teclado()
+            self.create_keyboard()
         else:
-            tecla_inserida = tecla.upper() if self.maiusculas_ativado and tecla.isalpha() else tecla
-            self.entrada_atual.insert("end", tecla_inserida)
+            inserted_key = key.upper() if self.uppercase_enabled and key.isalpha() else key
+            self.current_entry.insert("end", inserted_key)
 
-    def definir_entrada(self, entrada):
-        """Define o campo de entrada ativo"""
-        self.entrada_atual = entrada
+    def set_entry(self, entry):
+        """Sets the active input field"""
+        self.current_entry = entry

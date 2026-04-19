@@ -14,15 +14,15 @@ from ozempic_seguro.services.user_management_service import (
 class TestUserData:
     """Testes para UserData"""
 
-    def test_is_tecnico_true(self):
-        """Testa identificação de técnico"""
+    def test_is_technician_true(self):
+        """Tests technician identification"""
         user = UserData(1, "123", "Test", "tecnico", True, "2025-01-01")
-        assert user.is_tecnico is True
+        assert user.is_technician is True
 
-    def test_is_tecnico_false(self):
-        """Testa identificação de não-técnico"""
+    def test_is_technician_false(self):
+        """Tests non-technician identification"""
         user = UserData(1, "123", "Test", "vendedor", True, "2025-01-01")
-        assert user.is_tecnico is False
+        assert user.is_technician is False
 
     def test_is_admin_true(self):
         """Testa identificação de admin"""
@@ -57,7 +57,7 @@ class TestUserData:
     def test_tipo_display(self):
         """Testa formatação do tipo"""
         user = UserData(1, "123", "Test", "vendedor", True, "2025-01-01")
-        assert user.tipo_display == "Vendedor"
+        assert user.user_type_display == "Vendedor"
 
     def test_status_display_ativo(self):
         """Testa formatação do status ativo"""
@@ -69,10 +69,10 @@ class TestUserData:
         user = UserData(1, "123", "Test", "vendedor", False, "2025-01-01")
         assert user.status_display == "Inativo"
 
-    def test_data_criacao_display(self):
-        """Testa formatação da data"""
+    def test_created_at_display(self):
+        """Tests date formatting"""
         user = UserData(1, "123", "Test", "vendedor", True, "2025-01-01 10:00:00")
-        assert user.data_criacao_display == "2025-01-01"
+        assert user.created_at_display == "2025-01-01"
 
 
 class TestUserManagementService:
@@ -210,7 +210,7 @@ class TestUserManagementServiceEdgeCases:
     def test_delete_user_tecnico(self):
         """Testa exclusão de usuário técnico"""
         users = self.service.get_all_users()
-        tecnico_users = [u for u in users if u.is_tecnico]
+        tecnico_users = [u for u in users if u.is_technician]
 
         if tecnico_users:
             result = self.service.delete_user(tecnico_users[0].id)
@@ -220,7 +220,7 @@ class TestUserManagementServiceEdgeCases:
     def test_can_modify_user_tecnico(self):
         """Testa verificação de modificação para técnico"""
         users = self.service.get_all_users()
-        tecnico_users = [u for u in users if u.is_tecnico]
+        tecnico_users = [u for u in users if u.is_technician]
 
         if tecnico_users:
             can_modify, reason = self.service.can_modify_user(tecnico_users[0].id)
@@ -230,7 +230,7 @@ class TestUserManagementServiceEdgeCases:
     def test_can_delete_user_tecnico(self):
         """Testa verificação de exclusão para técnico"""
         users = self.service.get_all_users()
-        tecnico_users = [u for u in users if u.is_tecnico]
+        tecnico_users = [u for u in users if u.is_technician]
 
         if tecnico_users:
             can_delete, reason = self.service.can_delete_user(tecnico_users[0].id)
@@ -279,33 +279,33 @@ class TestUserManagementServiceAdditional:
         self.service = UserManagementService()
         yield
 
-    def test_user_data_tipo_display_vendedor(self):
-        """Testa tipo_display para vendedor"""
+    def test_user_data_user_type_display_vendedor(self):
+        """Tests user_type_display for vendedor"""
         user = UserData(1, "123", "Test", "vendedor", True, "2025-01-01")
-        assert user.tipo_display == "Vendedor"
+        assert user.user_type_display == "Vendedor"
 
-    def test_user_data_tipo_display_repositor(self):
-        """Testa tipo_display para repositor"""
+    def test_user_data_user_type_display_repositor(self):
+        """Tests user_type_display for repositor"""
         user = UserData(1, "123", "Test", "repositor", True, "2025-01-01")
-        assert user.tipo_display == "Repositor"
+        assert user.user_type_display == "Repositor"
 
-    def test_user_data_tipo_display_administrador(self):
-        """Testa tipo_display para administrador"""
+    def test_user_data_user_type_display_administrador(self):
+        """Tests user_type_display for administrador"""
         user = UserData(1, "123", "Test", "administrador", True, "2025-01-01")
-        assert user.tipo_display == "Administrador"
+        assert user.user_type_display == "Administrador"
 
-    def test_user_data_tipo_display_tecnico(self):
-        """Testa tipo_display para tecnico"""
+    def test_user_data_user_type_display_tecnico(self):
+        """Tests user_type_display for tecnico"""
         user = UserData(1, "123", "Test", "tecnico", True, "2025-01-01")
-        assert user.tipo_display == "Tecnico"
+        assert user.user_type_display == "Tecnico"
 
-    def test_user_data_status_display_ativo(self):
-        """Testa status_display para ativo"""
+    def test_user_data_status_display_active(self):
+        """Tests status_display for active"""
         user = UserData(1, "123", "Test", "vendedor", True, "2025-01-01")
         assert user.status_display == "Ativo"
 
-    def test_user_data_status_display_inativo(self):
-        """Testa status_display para inativo"""
+    def test_user_data_status_display_inactive(self):
+        """Tests status_display for inactive"""
         user = UserData(1, "123", "Test", "vendedor", False, "2025-01-01")
         assert user.status_display == "Inativo"
 
@@ -348,12 +348,12 @@ class TestUserDataProperties:
     def test_user_data_is_repositor(self):
         """Testa identificação de repositor"""
         user = UserData(1, "repo", "Repositor", "repositor", True, "2025-01-01")
-        assert user.tipo == "repositor"
+        assert user.user_type == "repositor"
 
-    def test_user_data_data_criacao_with_time(self):
-        """Testa data de criação com hora"""
+    def test_user_data_created_at_with_time(self):
+        """Tests created_at with time"""
         user = UserData(1, "test", "Test", "vendedor", True, "2025-01-01 15:30:00")
-        assert "2025-01-01" in user.data_criacao_display
+        assert "2025-01-01" in user.created_at_display
 
 
 class TestGetUserManagementService:

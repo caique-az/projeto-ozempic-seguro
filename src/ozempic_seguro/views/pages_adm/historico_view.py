@@ -7,10 +7,10 @@ from ...core.logger import logger
 class HistoricoView(customtkinter.CTkFrame):
     BG_COLOR = "#3B6A7D"
 
-    def __init__(self, master, voltar_callback=None, tipo_usuario="administrador", **kwargs):
+    def __init__(self, master, back_callback=None, user_type="administrador", **kwargs):
         super().__init__(master, fg_color=self.BG_COLOR, **kwargs)
-        self.voltar_callback = voltar_callback
-        self.tipo_usuario = tipo_usuario
+        self.back_callback = back_callback
+        self.user_type = user_type
         self._gaveta_service = GavetaService.get_instance()
         self.current_page = 1
         self.items_per_page = 20
@@ -22,13 +22,13 @@ class HistoricoView(customtkinter.CTkFrame):
         master.update_idletasks()
 
         self.pack(fill="both", expand=True)
-        self.criar_interface()
+        self.create_interface()
 
         # Remover overlay após tudo estar pronto
         self.update_idletasks()
         self._overlay.destroy()
 
-    def criar_interface(self):
+    def create_interface(self):
         # Cabeçalho
         self.header = Header(self, "Histórico de Ações nas Gavetas")
 
@@ -37,95 +37,95 @@ class HistoricoView(customtkinter.CTkFrame):
         self.content_frame.pack(fill="both", expand=True, padx=40, pady=(20, 100))
 
         # Frame branco para a tabela
-        self.tabela_frame = customtkinter.CTkFrame(
+        self.table_frame = customtkinter.CTkFrame(
             self.content_frame, fg_color="white", corner_radius=15
         )
-        self.tabela_frame.pack(fill="both", expand=True, pady=10)
+        self.table_frame.pack(fill="both", expand=True, pady=10)
 
         # Cabeçalhos da tabela
-        self.criar_cabecalhos()
+        self.create_table_headers()
 
         # Frame para os controles de paginação
-        self.paginacao_frame = customtkinter.CTkFrame(self.content_frame, fg_color="transparent")
-        self.paginacao_frame.pack(fill="x", pady=(10, 0))
+        self.pagination_frame = customtkinter.CTkFrame(self.content_frame, fg_color="transparent")
+        self.pagination_frame.pack(fill="x", pady=(10, 0))
 
         # Botões de navegação
-        self.btn_anterior = customtkinter.CTkButton(
-            self.paginacao_frame,
+        self.btn_previous = customtkinter.CTkButton(
+            self.pagination_frame,
             text="Anterior",
-            command=self.pagina_anterior,
+            command=self.previous_page,
             width=100,
             state="disabled",
         )
-        self.btn_anterior.pack(side="left", padx=5)
+        self.btn_previous.pack(side="left", padx=5)
 
-        self.lbl_pagina = customtkinter.CTkLabel(self.paginacao_frame, text="Página 1")
-        self.lbl_pagina.pack(side="left", padx=5)
+        self.lbl_page = customtkinter.CTkLabel(self.pagination_frame, text="Página 1")
+        self.lbl_page.pack(side="left", padx=5)
 
-        self.btn_proximo = customtkinter.CTkButton(
-            self.paginacao_frame, text="Próximo", command=self.proxima_pagina, width=100
+        self.btn_next = customtkinter.CTkButton(
+            self.pagination_frame, text="Próximo", command=self.next_page, width=100
         )
-        self.btn_proximo.pack(side="left", padx=5)
+        self.btn_next.pack(side="left", padx=5)
 
         # Linhas da tabela
-        self.carregar_dados()
+        self.load_data()
 
         # Botão voltar (adicionado por último para ficar por cima)
-        self.voltar_btn = VoltarButton(self, command=self.voltar)
+        self.back_btn = VoltarButton(self, command=self.go_back)
 
-    def criar_cabecalhos(self):
+    def create_table_headers(self):
         # Frame para os cabeçalhos
-        cabecalho_frame = customtkinter.CTkFrame(
-            self.tabela_frame, fg_color="#f0f0f0", corner_radius=10
+        header_frame = customtkinter.CTkFrame(
+            self.table_frame, fg_color="#f0f0f0", corner_radius=10
         )
-        cabecalho_frame.pack(fill="x", padx=10, pady=10)
+        header_frame.pack(fill="x", padx=10, pady=10)
 
         # Cabeçalhos
-        cabecalhos = ["Data/Hora", "Gaveta", "Ação", "Usuário"]
-        larguras = [0.3, 0.2, 0.25, 0.25]  # Proporções de largura
+        headers = ["Data/Hora", "Gaveta", "Ação", "Usuário"]
+        widths = [0.3, 0.2, 0.25, 0.25]  # Proporções de largura
 
-        for i, (texto, largura) in enumerate(zip(cabecalhos, larguras)):
+        for i, (text, width) in enumerate(zip(headers, widths)):
             # Cria um frame para cada cabeçalho para melhor controle
-            header_cell = customtkinter.CTkFrame(cabecalho_frame, fg_color="transparent")
+            header_cell = customtkinter.CTkFrame(header_frame, fg_color="transparent")
             header_cell.pack(side="left", fill="x", expand=True)
 
             # Configura o padding apenas para o cabeçalho "Gaveta"
-            padx_left = 65 if texto == "Gaveta" else 0
+            padx_left = 65 if text == "Gaveta" else 0
 
             lbl = customtkinter.CTkLabel(
-                header_cell, text=texto, font=("Arial", 14, "bold"), text_color="black", anchor="w"
+                header_cell, text=text, font=("Arial", 14, "bold"), text_color="black", anchor="w"
             )
             lbl.pack(side="left", padx=(padx_left, 0), pady=5)
 
             # Define o peso da coluna
-            cabecalho_frame.columnconfigure(i, weight=int(largura * 100))
+            header_frame.columnconfigure(i, weight=int(width * 100))
 
-    def carregar_dados(self):
-        # Limpa a tabela atual
-        for widget in self.tabela_frame.winfo_children():
-            if widget != self.tabela_frame.winfo_children()[0]:  # Mantém o cabeçalho
+    def load_data(self):
+        # Clear current table
+        for widget in self.table_frame.winfo_children():
+            if widget != self.table_frame.winfo_children()[0]:  # Mantém o cabeçalho
                 widget.destroy()
 
         # Frame rolável para os itens
-        scrollable_frame = customtkinter.CTkScrollableFrame(self.tabela_frame, fg_color="white")
+        scrollable_frame = customtkinter.CTkScrollableFrame(self.table_frame, fg_color="white")
         scrollable_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         try:
-            # Calcula o offset com base na página atual
+            # Calculate offset based on current page
             offset = (self.current_page - 1) * self.items_per_page
 
-            # Obtém os dados paginados usando GavetaService
+            # Get paginated data using GavetaService
             history_raw = self._gaveta_service.get_all_history_paginated(
                 offset, self.items_per_page
             )
             total = self._gaveta_service.count_all_history()
 
-            # Atualiza controles de paginação
-            self.atualizar_controles_paginacao(total)
+            # Update pagination controls
+            self.update_pagination_controls(total)
 
-            # Adicionar itens
+            # Add items
             for idx, h in enumerate(history_raw):
-                self.adicionar_linha(
+                self.add_row(
                     scrollable_frame,
                     h[0],  # data_hora
                     h[1],  # gaveta_id
@@ -134,60 +134,60 @@ class HistoricoView(customtkinter.CTkFrame):
                     idx % 2 == 0,  # Alternar cor de fundo
                 )
         except Exception as e:
-            logger.error(f"Erro ao carregar histórico: {e}")
+            logger.error(f"Error loading history: {e}")
 
-    def atualizar_controles_paginacao(self, total_itens):
-        # Calcula o total de páginas
-        total_paginas = (total_itens + self.items_per_page - 1) // self.items_per_page
-        total_paginas = max(1, total_paginas)  # Garante pelo menos 1 página
+    def update_pagination_controls(self, total_items):
+        # Calculate total pages
+        total_pages = (total_items + self.items_per_page - 1) // self.items_per_page
+        total_pages = max(1, total_pages)  # Ensure at least 1 page
 
-        # Atualiza o texto da página
-        self.lbl_pagina.configure(text=f"Página {self.current_page} de {total_paginas}")
+        # Update page text
+        self.lbl_page.configure(text=f"Página {self.current_page} de {total_pages}")
 
-        # Mostra ou esconde os controles de paginação com base no número de páginas
-        if total_paginas <= 1:
-            # Esconde os controles de paginação se houver apenas uma página
-            self.btn_anterior.pack_forget()
-            self.lbl_pagina.pack_forget()
-            self.btn_proximo.pack_forget()
+        # Show or hide pagination controls based on page count
+        if total_pages <= 1:
+            # Hide pagination controls if only one page
+            self.btn_previous.pack_forget()
+            self.lbl_page.pack_forget()
+            self.btn_next.pack_forget()
         else:
-            # Mostra os controles e atualiza os estados dos botões
-            self.btn_anterior.pack(side="left", padx=5)
-            self.lbl_pagina.pack(side="left", padx=5)
-            self.btn_proximo.pack(side="left", padx=5)
+            # Show controls and update button states
+            self.btn_previous.pack(side="left", padx=5)
+            self.lbl_page.pack(side="left", padx=5)
+            self.btn_next.pack(side="left", padx=5)
 
-            # Atualiza estados dos botões
-            self.btn_anterior.configure(state="normal" if self.current_page > 1 else "disabled")
-            self.btn_proximo.configure(
-                state="normal" if self.current_page < total_paginas else "disabled"
+            # Update button states
+            self.btn_previous.configure(state="normal" if self.current_page > 1 else "disabled")
+            self.btn_next.configure(
+                state="normal" if self.current_page < total_pages else "disabled"
             )
 
-    def proxima_pagina(self):
+    def next_page(self):
         self.current_page += 1
-        self.carregar_dados()
+        self.load_data()
 
-    def pagina_anterior(self):
+    def previous_page(self):
         if self.current_page > 1:
             self.current_page -= 1
-            self.carregar_dados()
+            self.load_data()
 
-    def adicionar_linha(self, parent, data_hora, gaveta_id, acao, usuario, par):
+    def add_row(self, parent, data_hora, gaveta_id, acao, usuario, par):
         # Frame para uma linha da tabela
-        linha_frame = customtkinter.CTkFrame(
+        row_frame = customtkinter.CTkFrame(
             parent, fg_color="#f9f9f9" if par else "white", corner_radius=8
         )
-        linha_frame.pack(fill="x", padx=5, pady=2)
+        row_frame.pack(fill="x", padx=5, pady=2)
 
         # Dados da linha
-        dados = [data_hora, gaveta_id, acao, usuario]
+        row_data = [data_hora, gaveta_id, acao, usuario]
 
-        for texto in dados:
+        for text in row_data:
             lbl = customtkinter.CTkLabel(
-                linha_frame, text=str(texto), font=("Arial", 12), text_color="black", anchor="w"
+                row_frame, text=str(text), font=("Arial", 12), text_color="black", anchor="w"
             )
             lbl.pack(side="left", padx=10, pady=8, fill="x", expand=True)
 
-    def voltar(self):
-        """Volta para a tela anterior"""
-        if self.voltar_callback:
-            self.voltar_callback()
+    def go_back(self):
+        """Returns to previous screen"""
+        if self.back_callback:
+            self.back_callback()

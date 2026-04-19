@@ -5,60 +5,60 @@ Sistema 100% bcrypt - sem suporte legacy.
 import bcrypt
 
 
-def hash_password(senha: str, rounds: int = 12) -> str:
+def hash_password(password: str, rounds: int = 12) -> str:
     """
-    Gera um hash seguro para a senha usando bcrypt.
+    Generates a secure hash for the password using bcrypt.
 
     Args:
-        senha (str): Senha a ser hasheada
+        password (str): Password to hash
         rounds (int): Número de rounds para bcrypt (padrão: 12)
 
     Returns:
         str: Hash da senha
     """
     # Converte senha para bytes
-    senha_bytes = senha.encode("utf-8")
+    password_bytes = password.encode("utf-8")
     # Gera salt e hash com bcrypt
     salt = bcrypt.gensalt(rounds=rounds)
-    hashed = bcrypt.hashpw(senha_bytes, salt)
+    hashed = bcrypt.hashpw(password_bytes, salt)
     return hashed.decode("utf-8")
 
 
-def verify_password(senha: str, senha_hash: str) -> bool:
+def verify_password(password: str, password_hash: str) -> bool:
     """
-    Verifica se a senha corresponde ao hash fornecido.
-    Usa apenas bcrypt para máxima segurança.
+    Verifies if the password matches the provided hash.
+    Uses bcrypt only for maximum security.
 
     Args:
-        senha (str): Senha em texto plano
-        senha_hash (str): Hash armazenado no banco
+        password (str): Plain text password
+        password_hash (str): Hash stored in the database
 
     Returns:
         bool: True se a senha corresponde ao hash
     """
     try:
         # Verifica se é bcrypt (começa com $2a$, $2b$, $2x$ ou $2y$)
-        if not senha_hash.startswith(("$2a$", "$2b$", "$2x$", "$2y$")):
+        if not password_hash.startswith(("$2a$", "$2b$", "$2x$", "$2y$")):
             # Hash inválido ou formato desconhecido
             return False
 
         # Sistema bcrypt apenas
-        senha_bytes = senha.encode("utf-8")
-        hash_bytes = senha_hash.encode("utf-8")
-        return bcrypt.checkpw(senha_bytes, hash_bytes)
+        password_bytes = password.encode("utf-8")
+        hash_bytes = password_hash.encode("utf-8")
+        return bcrypt.checkpw(password_bytes, hash_bytes)
     except (ValueError, TypeError):
         # Invalid hash format or encoding error
         return False
 
 
-def is_bcrypt_hash(senha_hash: str) -> bool:
+def is_bcrypt_hash(password_hash: str) -> bool:
     """
-    Verifica se um hash é do tipo bcrypt.
+    Checks if a hash is bcrypt format.
 
     Args:
-        senha_hash (str): Hash a ser verificado
+        password_hash (str): Hash to verify
 
     Returns:
         bool: True se for bcrypt, False caso contrário
     """
-    return senha_hash.startswith(("$2a$", "$2b$", "$2x$", "$2y$"))
+    return password_hash.startswith(("$2a$", "$2b$", "$2x$", "$2y$"))

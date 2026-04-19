@@ -11,9 +11,9 @@ from ..components import (
 class AdminGavetasFrame(customtkinter.CTkFrame):
     BG_COLOR = "#3B6A7D"
 
-    def __init__(self, master, voltar_callback=None, *args, **kwargs):
+    def __init__(self, master, back_callback=None, *args, **kwargs):
         super().__init__(master, fg_color=self.BG_COLOR, *args, **kwargs)
-        self.voltar_callback = voltar_callback
+        self.back_callback = back_callback
 
         # Criar overlay para esconder construção
         self._overlay = customtkinter.CTkFrame(master, fg_color=self.BG_COLOR)
@@ -22,20 +22,20 @@ class AdminGavetasFrame(customtkinter.CTkFrame):
         master.update_idletasks()
 
         self.pack(fill="both", expand=True)
-        self.criar_topo()
-        self.criar_grade_botoes()
-        self.criar_botao_voltar()
+        self.create_header()
+        self.create_button_grid()
+        self.create_back_button()
 
         # Remover overlay após tudo estar pronto
         self.update_idletasks()
         self._overlay.destroy()
 
-    def criar_topo(self):
-        """Cria o cabeçalho da tela"""
+    def create_header(self):
+        """Creates the screen header"""
         Header(self, "Administrador - Gerenciar Gavetas")
 
-    def criar_grade_botoes(self):
-        """Cria a grade de botões das gavetas"""
+    def create_button_grid(self):
+        """Creates the drawer buttons grid"""
         button_data = []
         # Criar 15 gavetas para testar a paginação
         for i in range(1, 16):
@@ -43,32 +43,32 @@ class AdminGavetasFrame(customtkinter.CTkFrame):
             button_data.append(
                 {
                     "text": gaveta_id,
-                    "command": lambda x=gaveta_id: self.mostrar_historico_gaveta(x),
+                    "command": lambda x=gaveta_id: self.show_drawer_history(x),
                     "name": "gaveta_black.png",
-                    "tipo_usuario": "administrador",  # Permite abrir e fechar
+                    "user_type": "administrador",  # Permite abrir e fechar
                 }
             )
 
-        self.grade_botoes = GavetaButtonGrid(self, button_data)
+        self.button_grid = GavetaButtonGrid(self, button_data)
 
-    def mostrar_historico_gaveta(self, gaveta_id):
-        """Mostra o histórico de uma gaveta específica"""
+    def show_drawer_history(self, gaveta_id):
+        """Shows the history of a specific drawer"""
         ToastNotification.show(self, f"Carregando histórico da gaveta {gaveta_id}...", "info")
         temp_button = GavetaButton(
             self,
             text=gaveta_id,
             command=None,
             name="gaveta_black.png",
-            tipo_usuario="administrador",
+            user_type="administrador",
         )
-        temp_button.mostrar_historico()
+        temp_button.show_history()
 
-    def criar_botao_voltar(self):
-        """Cria o botão de voltar usando o componente VoltarButton"""
-        self.voltar_btn = VoltarButton(self, command=self.voltar_ao_painel)
+    def create_back_button(self):
+        """Creates back button using VoltarButton component"""
+        self.back_btn = VoltarButton(self, command=self.back_to_panel)
 
-    def voltar_ao_painel(self):
-        """Volta para o painel principal do administrador"""
-        if self.voltar_callback:
+    def back_to_panel(self):
+        """Returns to the administrator main panel"""
+        if self.back_callback:
             self.pack_forget()
-            self.voltar_callback()
+            self.back_callback()

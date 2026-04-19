@@ -51,13 +51,13 @@ class UserRepository(IUserRepository):
     def _create_default_admin(self) -> None:
         """Cria usuário administrador padrão"""
         username = os.getenv("OZEMPIC_ADMIN_USERNAME", "00")
-        senha = os.getenv("OZEMPIC_ADMIN_PASSWORD", "admin@2025")
-        senha_hash = hash_password(senha)
+        password = os.getenv("OZEMPIC_ADMIN_PASSWORD", "admin@2025")
+        password_hash = hash_password(password)
 
         try:
             self._db.execute(
                 "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo, ativo) VALUES (?, ?, ?, ?, ?)",
-                (username, senha_hash, "ADMINISTRADOR", "administrador", 1),
+                (username, password_hash, "ADMINISTRADOR", "administrador", 1),
             )
             self._db.commit()
             logger.info(f"Default admin user created: {username}")
@@ -67,13 +67,13 @@ class UserRepository(IUserRepository):
     def _create_default_tecnico(self) -> None:
         """Cria usuário técnico padrão"""
         username = os.getenv("OZEMPIC_TECNICO_USERNAME", "01")
-        senha = os.getenv("OZEMPIC_TECNICO_PASSWORD", "tecnico@2025")
-        senha_hash = hash_password(senha)
+        password = os.getenv("OZEMPIC_TECNICO_PASSWORD", "tecnico@2025")
+        password_hash = hash_password(password)
 
         try:
             self._db.execute(
                 "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo, ativo) VALUES (?, ?, ?, ?, ?)",
-                (username, senha_hash, "TÉCNICO", "tecnico", 1),
+                (username, password_hash, "TÉCNICO", "tecnico", 1),
             )
             self._db.commit()
             logger.info(f"Default tecnico user created: {username}")
@@ -81,25 +81,25 @@ class UserRepository(IUserRepository):
             self._db.rollback()
 
     def create_user(
-        self, username: str, senha: str, nome_completo: str, tipo: str
+        self, username: str, password: str, full_name: str, user_type: str
     ) -> Optional[int]:
         """
         Cria um usuário e retorna seu ID.
 
         Args:
-            username: Nome de usuário único
-            senha: Senha em texto plano (será hasheada)
-            nome_completo: Nome completo do usuário
-            tipo: Tipo do usuário (administrador, vendedor, repositor, tecnico)
+            username: Unique username
+            password: Plain text password (will be hashed)
+            full_name: Full name of the user
+            user_type: User type (administrador, vendedor, repositor, tecnico)
 
         Returns:
             ID do usuário criado ou None se falhar
         """
-        senha_hash = hash_password(senha)
+        password_hash = hash_password(password)
         try:
             self._db.execute(
                 "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo) VALUES (?, ?, ?, ?)",
-                (username, senha_hash, nome_completo, tipo),
+                (username, password_hash, full_name, user_type),
             )
             self._db.commit()
             return self._db.lastrowid()
@@ -167,8 +167,8 @@ class UserRepository(IUserRepository):
         Returns:
             True se atualizado com sucesso
         """
-        senha_hash = hash_password(new_password)
-        self._db.execute("UPDATE usuarios SET senha_hash = ? WHERE id = ?", (senha_hash, user_id))
+        password_hash = hash_password(new_password)
+        self._db.execute("UPDATE usuarios SET senha_hash = ? WHERE id = ?", (password_hash, user_id))
         self._db.commit()
         return self._db.cursor.rowcount > 0
 

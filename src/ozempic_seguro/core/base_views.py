@@ -51,8 +51,8 @@ class BaseView(customtkinter.CTkFrame, ABC):
 class AdminView(BaseView):
     """Classe base para views administrativas"""
 
-    def __init__(self, master, voltar_callback: Optional[Callable] = None, **kwargs):
-        self.voltar_callback = voltar_callback
+    def __init__(self, master, back_callback: Optional[Callable] = None, **kwargs):
+        self.back_callback = back_callback
         super().__init__(master, **kwargs)
 
         # Serviços comuns para views administrativas
@@ -73,21 +73,21 @@ class AdminView(BaseView):
             self._audit_service = ServiceFactory.get_audit_service()
         return self._audit_service
 
-    @log_exceptions("Admin View - Voltar Action")
-    def handle_voltar(self) -> None:
+    @log_exceptions("Admin View - Back Action")
+    def handle_back(self) -> None:
         """Handler padrão para botão voltar"""
-        if self.voltar_callback:
-            logger.info(f"Voltar action triggered from {self.__class__.__name__}")
-            self.voltar_callback()
+        if self.back_callback:
+            logger.info(f"Back action triggered from {self.__class__.__name__}")
+            self.back_callback()
         else:
-            logger.warning(f"No voltar_callback defined for {self.__class__.__name__}")
+            logger.warning(f"No back_callback defined for {self.__class__.__name__}")
 
 
 class UserRoleView(BaseView):
     """Classe base para views específicas de papel do usuário (vendedor, repositor, etc.)"""
 
-    def __init__(self, master, finalizar_sessao_callback: Optional[Callable] = None, **kwargs):
-        self.finalizar_sessao_callback = finalizar_sessao_callback
+    def __init__(self, master, end_session_callback: Optional[Callable] = None, **kwargs):
+        self.end_session_callback = end_session_callback
         super().__init__(master, **kwargs)
 
         # Session manager comum
@@ -100,14 +100,14 @@ class UserRoleView(BaseView):
             self._session_manager = ServiceFactory.get_session_manager()
         return self._session_manager
 
-    @log_exceptions("User Role View - Finalizar Sessao")
-    def handle_finalizar_sessao(self) -> None:
+    @log_exceptions("User Role View - End Session")
+    def handle_end_session(self) -> None:
         """Handler padrão para finalizar sessão"""
-        if self.finalizar_sessao_callback:
+        if self.end_session_callback:
             logger.info(f"Session finalization triggered from {self.__class__.__name__}")
-            self.finalizar_sessao_callback()
+            self.end_session_callback()
         else:
-            logger.warning(f"No finalizar_sessao_callback defined for {self.__class__.__name__}")
+            logger.warning(f"No end_session_callback defined for {self.__class__.__name__}")
 
     def _setup_view(self) -> None:
         """Setup padrão para views de papel de usuário"""

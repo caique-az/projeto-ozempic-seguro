@@ -1,24 +1,24 @@
 """
-View do repositor - permite abrir e fechar gavetas.
+Repositor view - allows opening and closing drawers.
 """
 from .base_user_view import BaseUserFrame
 from .components import GavetaButton
 
 
 class RepositorFrame(BaseUserFrame):
-    """Frame para usuários do tipo repositor."""
+    """Frame for repositor type users."""
 
-    TITULO = "Repositor"
-    TIPO_USUARIO = "repositor"
+    TITLE = "Repositor"
+    USER_TYPE = "repositor"
 
-    def mostrar_historico_gaveta(self, gaveta_id):
-        """Mostra o histórico de uma gaveta específica"""
+    def show_drawer_history(self, gaveta_id):
+        """Shows the history of a specific drawer"""
         button = GavetaButton(
             self,
             text=gaveta_id,
             command=None,
             name="gaveta_black.png",
-            tipo_usuario=self.TIPO_USUARIO,
+            user_type=self.USER_TYPE,
         )
-        button.mostrar_historico()
+        button.show_history()
         button.destroy()

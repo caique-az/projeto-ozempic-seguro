@@ -21,14 +21,14 @@ class DrawerState:
     """Estado de uma gaveta"""
 
     numero: int
-    esta_aberta: bool
+    is_open: bool
     ultimo_usuario: Optional[str] = None
     ultima_acao: Optional[str] = None
 
     @property
     def status_display(self) -> str:
         """Retorna status formatado"""
-        return "Aberta" if self.esta_aberta else "Fechada"
+        return "Aberta" if self.is_open else "Fechada"
 
 
 @dataclass
@@ -37,7 +37,7 @@ class DrawerHistoryItem:
 
     data_hora: str
     gaveta_id: int
-    acao: str
+    action: str
     usuario: str
 
     @property
@@ -51,15 +51,15 @@ class DrawerHistoryItem:
             return "N/A"
 
     @property
-    def acao_display(self) -> str:
-        """Retorna ação formatada"""
+    def action_display(self) -> str:
+        """Returns formatted action"""
         acoes = {
             "aberta": "Abriu",
             "fechada": "Fechou",
             "abrir": "Abriu",
             "fechar": "Fechou",
         }
-        return acoes.get(self.acao.lower(), self.acao.capitalize())
+        return acoes.get(self.action.lower(), self.action.capitalize())
 
 
 @dataclass

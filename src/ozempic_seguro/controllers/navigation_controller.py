@@ -13,8 +13,8 @@ class NavigationController:
         self.container = app.container
         self.frames = {}
         self.current_frame = None
-        self.tela_index = 0
-        self.telas = [self.show_tela_toque, self.show_tela_logo]
+        self.screen_index = 0
+        self.screens = [self.show_touch_screen, self.show_logo_screen]
         self.after_id = None
         self.is_running = True
         self._transitioning = False
@@ -26,24 +26,24 @@ class NavigationController:
         """Pré-carrega os frames iniciais de forma invisível"""
         # Criar frames e renderizar fora da tela visível
         self.frames["toque"] = TelaToqueFrame(
-            self.container, on_click_callback=self.show_iniciar_sessao
+            self.container, on_click_callback=self.show_start_session
         )
         self._prerender_frame(self.frames["toque"])
 
         self.frames["logo"] = TelaLogoFrame(
-            self.container, on_click_callback=self.show_iniciar_sessao
+            self.container, on_click_callback=self.show_start_session
         )
         self._prerender_frame(self.frames["logo"])
 
         self.frames["iniciar"] = IniciarSessaoFrame(
             self.container,
             show_login_callback=self.show_login,
-            voltar_callback=self.voltar_para_tela_inicial,
+            back_callback=self.back_to_initial_screen,
         )
         self._prerender_frame(self.frames["iniciar"])
 
         self.frames["login"] = LoginFrame(
-            self.container, show_iniciar_callback=self.show_iniciar_sessao
+            self.container, show_iniciar_callback=self.show_start_session
         )
         self._prerender_frame(self.frames["login"])
 
@@ -106,47 +106,47 @@ class NavigationController:
         """Cria um frame específico"""
         if frame_name == "toque":
             self.frames[frame_name] = TelaToqueFrame(
-                self.container, on_click_callback=self.show_iniciar_sessao
+                self.container, on_click_callback=self.show_start_session
             )
         elif frame_name == "logo":
             self.frames[frame_name] = TelaLogoFrame(
-                self.container, on_click_callback=self.show_iniciar_sessao
+                self.container, on_click_callback=self.show_start_session
             )
         elif frame_name == "iniciar":
             self.frames[frame_name] = IniciarSessaoFrame(
                 self.container,
                 show_login_callback=self.show_login,
-                voltar_callback=self.voltar_para_tela_inicial,
+                back_callback=self.back_to_initial_screen,
             )
         elif frame_name == "login":
             self.frames[frame_name] = LoginFrame(
-                self.container, show_iniciar_callback=self.show_iniciar_sessao
+                self.container, show_iniciar_callback=self.show_start_session
             )
 
         self.app.update_idletasks()
 
-    def voltar_para_tela_inicial(self):
+    def back_to_initial_screen(self):
         if self.after_id:
             self.app.after_cancel(self.after_id)
         if self.current_frame:
             self.current_frame.pack_forget()
-        self.show_tela_toque()
-        self.start_alternancia()
+        self.show_touch_screen()
+        self.start_alternation()
 
-    def show_tela_toque(self):
+    def show_touch_screen(self):
         self.show_frame("toque")
 
-    def show_tela_logo(self):
+    def show_logo_screen(self):
         self.show_frame("logo")
 
-    def show_iniciar_sessao(self):
+    def show_start_session(self):
         if self.after_id:
             self.app.after_cancel(self.after_id)
         if "iniciar" not in self.frames or not self.frames["iniciar"].winfo_exists():
             self.frames["iniciar"] = IniciarSessaoFrame(
                 self.container,
                 show_login_callback=self.show_login,
-                voltar_callback=self.voltar_para_tela_inicial,
+                back_callback=self.back_to_initial_screen,
             )
         self.show_frame("iniciar")
 
@@ -157,53 +157,53 @@ class NavigationController:
 
         # Limpa campos do login
         if "login" in self.frames and self.frames["login"].winfo_exists():
-            self.frames["login"].usuario_entry.delete(0, "end")
-            self.frames["login"].senha_entry.delete(0, "end")
+            self.frames["login"].username_entry.delete(0, "end")
+            self.frames["login"].password_entry.delete(0, "end")
         else:
             self.frames["login"] = LoginFrame(
-                self.container, show_iniciar_callback=self.show_iniciar_sessao
+                self.container, show_iniciar_callback=self.show_start_session
             )
         self.show_frame("login")
 
-    def start_alternancia(self):
-        """Inicia a alternância entre telas"""
-        if self.is_running and len(self.telas) > 1:
-            self.after_id = self.app.after(3000, self.alternar_tela)
+    def start_alternation(self):
+        """Starts alternation between screens"""
+        if self.is_running and len(self.screens) > 1:
+            self.after_id = self.app.after(3000, self.alternate_screen)
 
-    def alternar_tela(self):
-        """Alterna entre as telas automaticamente"""
+    def alternate_screen(self):
+        """Alternates between screens automatically"""
         if not self.is_running:
             return
 
-        self.tela_index = (self.tela_index + 1) % len(self.telas)
-        self.telas[self.tela_index]()
+        self.screen_index = (self.screen_index + 1) % len(self.screens)
+        self.screens[self.screen_index]()
 
-        # Agenda próxima alternância
+        # Schedule next alternation
         if self.is_running:
-            self.after_id = self.app.after(3000, self.alternar_tela)
+            self.after_id = self.app.after(3000, self.alternate_screen)
 
     def cleanup(self):
-        """Limpa recursos quando a aplicação é encerrada"""
+        """Cleans up resources when the application is closed"""
         try:
-            # Parar alternância de telas
+            # Stop screen alternation
             self.is_running = False
 
-            # Cancelar timer pendente
+            # Cancel pending timer
             if self.after_id:
                 self.app.after_cancel(self.after_id)
                 self.after_id = None
 
-            # Destruir frames se existirem
+            # Destroy frames if they exist
             for frame_name, frame in self.frames.items():
                 try:
                     if frame and hasattr(frame, "winfo_exists") and frame.winfo_exists():
                         frame.destroy()
                 except Exception as e:
-                    logger.warning(f"Erro ao destruir frame {frame_name}: {e}")
+                    logger.warning(f"Error destroying frame {frame_name}: {e}")
 
-            # Limpar dicionário de frames
+            # Clear frames dictionary
             self.frames.clear()
             self.current_frame = None
 
         except Exception as e:
-            logger.error(f"Erro durante cleanup do NavigationController: {e}")
+            logger.error(f"Error during NavigationController cleanup: {e}")

@@ -28,34 +28,34 @@ class AuditRepository(IAuditRepository):
 
     def create_log(
         self,
-        usuario_id: Optional[int] = None,
-        acao: Optional[str] = None,
-        tabela_afetada: Optional[str] = None,
+        user_id: Optional[int] = None,
+        action: Optional[str] = None,
+        affected_table: Optional[str] = None,
         id_afetado: Optional[int] = None,
-        dados_anteriores: Optional[Dict] = None,
-        dados_novos: Optional[Dict] = None,
-        endereco_ip: Optional[str] = None,
+        previous_data: Optional[Dict] = None,
+        new_data: Optional[Dict] = None,
+        ip_address: Optional[str] = None,
     ) -> Optional[int]:
         """
-        Registra um log de auditoria e retorna o ID do registro.
+        Records an audit log entry and returns the record ID.
 
         Args:
-            usuario_id: ID do usuário que realizou a ação
-            acao: Tipo de ação (LOGIN, LOGOUT, CRIAR, ATUALIZAR, EXCLUIR, etc.)
-            tabela_afetada: Nome da tabela afetada
-            id_afetado: ID do registro afetado
-            dados_anteriores: Dados antes da alteração
-            dados_novos: Dados após a alteração
-            endereco_ip: Endereço IP do usuário
+            user_id: ID of the user who performed the action
+            action: Action type (LOGIN, LOGOUT, CRIAR, ATUALIZAR, EXCLUIR, etc.)
+            affected_table: Name of the affected table
+            id_afetado: ID of the affected record
+            previous_data: Data before the change
+            new_data: Data after the change
+            ip_address: User's IP address
 
         Returns:
             ID do registro criado ou None se falhar
         """
         try:
             prev_json = (
-                json.dumps(dados_anteriores, ensure_ascii=False) if dados_anteriores else None
+                json.dumps(previous_data, ensure_ascii=False) if previous_data else None
             )
-            new_json = json.dumps(dados_novos, ensure_ascii=False) if dados_novos else None
+            new_json = json.dumps(new_data, ensure_ascii=False) if new_data else None
 
             self._db.execute(
                 """
@@ -63,7 +63,7 @@ class AuditRepository(IAuditRepository):
                 (usuario_id, acao, tabela_afetada, id_afetado, dados_anteriores, dados_novos, endereco_ip)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-                (usuario_id, acao, tabela_afetada, id_afetado, prev_json, new_json, endereco_ip),
+                (user_id, action, affected_table, id_afetado, prev_json, new_json, ip_address),
             )
 
             self._db.commit()
@@ -78,23 +78,23 @@ class AuditRepository(IAuditRepository):
         self,
         offset: int = 0,
         limit: int = 50,
-        filtro_usuario: Optional[int] = None,
-        filtro_acao: Optional[str] = None,
-        filtro_tabela: Optional[str] = None,
-        data_inicio: Optional[str] = None,
-        data_fim: Optional[str] = None,
+        user_filter: Optional[int] = None,
+        action_filter: Optional[str] = None,
+        table_filter: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Retorna logs de auditoria com filtros e paginação.
+        Returns audit logs with filters and pagination.
 
         Args:
-            offset: Número de registros a pular
-            limit: Número máximo de registros
-            filtro_usuario: Filtrar por ID do usuário
-            filtro_acao: Filtrar por tipo de ação
-            filtro_tabela: Filtrar por tabela afetada
-            data_inicio: Data inicial (YYYY-MM-DD)
-            data_fim: Data final (YYYY-MM-DD)
+            offset: Number of records to skip
+            limit: Maximum number of records
+            user_filter: Filter by user ID
+            action_filter: Filter by action type
+            table_filter: Filter by affected table
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
 
         Returns:
             Lista de dicionários com os logs
@@ -111,21 +111,21 @@ class AuditRepository(IAuditRepository):
             """
             params: List[Any] = []
 
-            if filtro_usuario is not None:
+            if user_filter is not None:
                 query += " AND a.usuario_id = ?"
-                params.append(filtro_usuario)
-            if filtro_acao:
+                params.append(user_filter)
+            if action_filter:
                 query += " AND a.acao = ?"
-                params.append(filtro_acao)
-            if filtro_tabela:
+                params.append(action_filter)
+            if table_filter:
                 query += " AND a.tabela_afetada = ?"
-                params.append(filtro_tabela)
-            if data_inicio:
+                params.append(table_filter)
+            if start_date:
                 query += " AND DATE(a.data_hora) >= ?"
-                params.append(data_inicio)
-            if data_fim:
+                params.append(start_date)
+            if end_date:
                 query += " AND DATE(a.data_hora) <= ?"
-                params.append(data_fim)
+                params.append(end_date)
 
             query += " ORDER BY a.data_hora DESC LIMIT ? OFFSET ?"
             params.extend([limit, offset])
@@ -161,21 +161,21 @@ class AuditRepository(IAuditRepository):
 
     def count_logs(
         self,
-        filtro_usuario: Optional[int] = None,
-        filtro_acao: Optional[str] = None,
-        filtro_tabela: Optional[str] = None,
-        data_inicio: Optional[str] = None,
-        data_fim: Optional[str] = None,
+        user_filter: Optional[int] = None,
+        action_filter: Optional[str] = None,
+        table_filter: Optional[str] = None,
+        start_date: Optional[str] = None,
+        end_date: Optional[str] = None,
     ) -> int:
         """
-        Retorna o total de logs que correspondem aos filtros.
+        Returns the total number of logs matching the filters.
 
         Args:
-            filtro_usuario: Filtrar por ID do usuário
-            filtro_acao: Filtrar por tipo de ação
-            filtro_tabela: Filtrar por tabela afetada
-            data_inicio: Data inicial (YYYY-MM-DD)
-            data_fim: Data final (YYYY-MM-DD)
+            user_filter: Filter by user ID
+            action_filter: Filter by action type
+            table_filter: Filter by affected table
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
 
         Returns:
             Número total de registros
@@ -184,21 +184,21 @@ class AuditRepository(IAuditRepository):
             query = "SELECT COUNT(*) FROM auditoria a WHERE 1=1"
             params: List[Any] = []
 
-            if filtro_usuario is not None:
+            if user_filter is not None:
                 query += " AND a.usuario_id = ?"
-                params.append(filtro_usuario)
-            if filtro_acao:
+                params.append(user_filter)
+            if action_filter:
                 query += " AND a.acao = ?"
-                params.append(filtro_acao)
-            if filtro_tabela:
+                params.append(action_filter)
+            if table_filter:
                 query += " AND a.tabela_afetada = ?"
-                params.append(filtro_tabela)
-            if data_inicio:
+                params.append(table_filter)
+            if start_date:
                 query += " AND DATE(a.data_hora) >= ?"
-                params.append(data_inicio)
-            if data_fim:
+                params.append(start_date)
+            if end_date:
                 query += " AND DATE(a.data_hora) <= ?"
-                params.append(data_fim)
+                params.append(end_date)
 
             self._db.execute(query, tuple(params))
             return self._db.fetchone()[0]
@@ -223,10 +223,10 @@ class AuditRepository(IAuditRepository):
     def save(self, entity: Dict[str, Any]) -> bool:
         """Implementação de IRepository.save"""
         result = self.create_log(
-            usuario_id=entity.get("usuario_id"),
-            acao=entity.get("acao"),
-            tabela_afetada=entity.get("tabela_afetada"),
-            dados_anteriores=entity.get("dados_anteriores"),
+            user_id=entity.get("usuario_id"),
+            action=entity.get("acao"),
+            affected_table=entity.get("tabela_afetada"),
+            previous_data=entity.get("dados_anteriores"),
         )
         return result is not None
 
@@ -248,21 +248,21 @@ class AuditRepository(IAuditRepository):
     ) -> bool:
         """Implementação de IAuditRepository.log_action"""
         result = self.create_log(
-            usuario_id=user_id,
-            acao=action,
-            dados_anteriores={"details": details} if details else None,
-            endereco_ip=ip_address,
+            user_id=user_id,
+            action=action,
+            previous_data={"details": details} if details else None,
+            ip_address=ip_address,
         )
         return result is not None
 
     def find_by_user(self, user_id: int) -> List[Dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_user"""
-        return self.get_logs(filtro_usuario=user_id)
+        return self.get_logs(user_filter=user_id)
 
     def find_by_action(self, action: str) -> List[Dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_action"""
-        return self.get_logs(filtro_acao=action)
+        return self.get_logs(action_filter=action)
 
     def find_by_date_range(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_date_range"""
-        return self.get_logs(data_inicio=start_date, data_fim=end_date)
+        return self.get_logs(start_date=start_date, end_date=end_date)

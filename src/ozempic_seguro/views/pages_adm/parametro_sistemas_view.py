@@ -7,8 +7,8 @@ from tkinter import messagebox
 class ParametroSistemasFrame(customtkinter.CTkFrame):
     BG_COLOR = "#3B6A7D"
 
-    def __init__(self, master, voltar_callback=None, *args, **kwargs):
-        self.voltar_callback = voltar_callback
+    def __init__(self, master, back_callback=None, *args, **kwargs):
+        self.back_callback = back_callback
         self.timer_service = get_timer_control_service()
         super().__init__(master, fg_color=self.BG_COLOR, *args, **kwargs)
 
@@ -28,16 +28,16 @@ class ParametroSistemasFrame(customtkinter.CTkFrame):
         self.main_content.pack(fill="both", expand=True, padx=40, pady=(20, 100))
 
         # Criar elementos restantes
-        self.criar_controle_timer()
-        self.criar_tabela_parametros()
-        self.criar_botao_voltar()
+        self.create_timer_control()
+        self.create_parameters_table()
+        self.create_back_button()
 
         # Remover overlay após tudo estar pronto
         self.update_idletasks()
         self._overlay.destroy()
 
-    def criar_controle_timer(self):
-        """Cria o controle para ativar/desativar a função de timer de abertura de gavetas"""
+    def create_timer_control(self):
+        """Creates control to enable/disable drawer opening timer function"""
         frame_controle = customtkinter.CTkFrame(
             self.main_content, fg_color="white", corner_radius=15, height=100
         )
@@ -68,25 +68,25 @@ class ParametroSistemasFrame(customtkinter.CTkFrame):
         self.lbl_status.pack(pady=(0, 5))
 
         # Botão de controle
-        self.btn_controle_timer = customtkinter.CTkButton(
+        self.btn_timer_control = customtkinter.CTkButton(
             frame_status,
             text="",
             width=120,
-            command=self.alternar_timer,
+            command=self.toggle_timer,
             fg_color="#4CAF50" if self.timer_service.is_timer_enabled() else "#F44336",
         )
-        self.btn_controle_timer.pack()
+        self.btn_timer_control.pack()
 
         # Atualiza o texto do botão
-        self.atualizar_estado_botao()
+        self.update_button_state()
 
-    def alternar_timer(self):
-        """Alterna o estado da função de timer usando TimerControlService"""
+    def toggle_timer(self):
+        """Toggles timer function state using TimerControlService"""
         success, msg, new_state = self.timer_service.toggle_timer()
 
         if success:
-            estado = "ativado" if new_state else "desativado"
-            messagebox.showinfo("Sucesso", f"Timer de abertura de gavetas {estado} com sucesso!")
+            state_text = "ativado" if new_state else "desativado"
+            messagebox.showinfo("Sucesso", f"Timer de abertura de gavetas {state_text} com sucesso!")
 
             # Se estiver ativando e houver um bloqueio ativo, mostra o tempo restante
             if new_state and self.timer_service.is_blocked():
@@ -101,38 +101,38 @@ class ParametroSistemasFrame(customtkinter.CTkFrame):
             messagebox.showerror("Erro", msg)
 
         # Atualiza o estado do botão
-        self.atualizar_estado_botao()
+        self.update_button_state()
 
-    def atualizar_estado_botao(self):
-        """Atualiza o texto e a cor do botão de acordo com o estado do timer"""
+    def update_button_state(self):
+        """Updates button text and color according to timer state"""
         if self.timer_service.is_timer_enabled():
-            self.btn_controle_timer.configure(
+            self.btn_timer_control.configure(
                 text="Desativar Timer", fg_color="#4CAF50", hover_color="#388E3C"
             )
             self.lbl_status.configure(text="Status: Ativado", text_color="#2E7D32")
         else:
-            self.btn_controle_timer.configure(
+            self.btn_timer_control.configure(
                 text="Ativar Timer", fg_color="#F44336", hover_color="#D32F2F"
             )
             self.lbl_status.configure(text="Status: Desativado", text_color="#C62828")
 
-    def criar_tabela_parametros(self):
+    def create_parameters_table(self):
         # Frame para a tabela
-        self.tabela_frame = customtkinter.CTkFrame(
+        self.table_frame = customtkinter.CTkFrame(
             self.main_content,
             fg_color="white",
             corner_radius=15,
         )
-        self.tabela_frame.pack(fill="both", expand=True, pady=(10, 0))
+        self.table_frame.pack(fill="both", expand=True, pady=(10, 0))
 
         # Configurar grid da tabela
-        self.tabela_frame.columnconfigure(0, weight=1)
+        self.table_frame.columnconfigure(0, weight=1)
 
         # Cabeçalhos da tabela
-        self.criar_cabecalhos()
+        self.create_table_headers()
 
         # Frame rolável para os itens
-        scrollable_frame = customtkinter.CTkScrollableFrame(self.tabela_frame, fg_color="white")
+        scrollable_frame = customtkinter.CTkScrollableFrame(self.table_frame, fg_color="white")
         scrollable_frame.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         # Mensagem de tabela vazia
@@ -144,25 +144,25 @@ class ParametroSistemasFrame(customtkinter.CTkFrame):
         )
         lbl_vazio.pack(pady=20)
 
-    def criar_cabecalhos(self):
+    def create_table_headers(self):
         # Frame para os cabeçalhos
-        cabecalho_frame = customtkinter.CTkFrame(
-            self.tabela_frame, fg_color="#f0f0f0", corner_radius=10
+        header_frame = customtkinter.CTkFrame(
+            self.table_frame, fg_color="#f0f0f0", corner_radius=10
         )
-        cabecalho_frame.pack(fill="x", padx=10, pady=10)
+        header_frame.pack(fill="x", padx=10, pady=10)
 
         # Cabeçalhos
-        cabecalhos = ["Parâmetro", "Valor", "Descrição", "Atualizado em"]
+        headers = ["Parâmetro", "Valor", "Descrição", "Atualizado em"]
 
-        for texto in cabecalhos:
+        for text in headers:
             # Cria um frame para cada cabeçalho para melhor controle
-            header_cell = customtkinter.CTkFrame(cabecalho_frame, fg_color="transparent")
+            header_cell = customtkinter.CTkFrame(header_frame, fg_color="transparent")
             header_cell.pack(side="left", fill="x", expand=True)
 
             lbl = customtkinter.CTkLabel(
-                header_cell, text=texto, font=("Arial", 14, "bold"), text_color="black", anchor="w"
+                header_cell, text=text, font=("Arial", 14, "bold"), text_color="black", anchor="w"
             )
             lbl.pack(side="left", padx=10, pady=5)
 
-    def criar_botao_voltar(self):
-        VoltarButton(self, self.voltar_callback)
+    def create_back_button(self):
+        VoltarButton(self, self.back_callback)

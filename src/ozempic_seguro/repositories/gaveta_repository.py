@@ -24,30 +24,30 @@ class GavetaRepository(IGavetaRepository):
     def __init__(self):
         self._db = DatabaseConnection.get_instance()
 
-    def get_state(self, numero_gaveta: int) -> bool:
+    def get_state(self, drawer_number: int) -> bool:
         """
         Retorna o estado atual de uma gaveta.
 
         Args:
-            numero_gaveta: Número da gaveta
+            drawer_number: Drawer number
 
         Returns:
             True se aberta, False se fechada
         """
         self._db.execute(
-            "SELECT esta_aberta FROM gavetas WHERE numero_gaveta = ?", (numero_gaveta,)
+            "SELECT esta_aberta FROM gavetas WHERE numero_gaveta = ?", (drawer_number,)
         )
         result = self._db.fetchone()
         return bool(result[0]) if result else False
 
     def set_state(
-        self, numero_gaveta: int, estado: bool, usuario_tipo: str, usuario_id: Optional[int] = None
+        self, drawer_number: int, state: bool, user_type: str, usuario_id: Optional[int] = None
     ) -> Tuple[bool, str]:
         """
         Define o estado de uma gaveta e registra no histórico.
 
         Args:
-            numero_gaveta: Número da gaveta
+            drawer_number: Drawer number
             estado: True para abrir, False para fechar
             usuario_tipo: Tipo do usuário que realizou a ação
             usuario_id: ID do usuário (opcional)
@@ -58,7 +58,7 @@ class GavetaRepository(IGavetaRepository):
         try:
             # Verifica se a gaveta existe
             self._db.execute(
-                "SELECT id, esta_aberta FROM gavetas WHERE numero_gaveta = ?", (numero_gaveta,)
+                "SELECT id, esta_aberta FROM gavetas WHERE numero_gaveta = ?", (drawer_number,)
             )
             gaveta = self._db.fetchone()
 
@@ -66,55 +66,55 @@ class GavetaRepository(IGavetaRepository):
                 # Cria nova gaveta
                 self._db.execute(
                     "INSERT INTO gavetas (numero_gaveta, esta_aberta) VALUES (?, ?)",
-                    (numero_gaveta, estado),
+                    (drawer_number, state),
                 )
                 gaveta_id = self._db.lastrowid()
-                acao = "aberta" if estado else "fechada"
+                action = "aberta" if state else "fechada"
             else:
                 gaveta_id = gaveta[0]
-                estado_anterior = bool(gaveta[1])
+                previous_state = bool(gaveta[1])
 
                 # Determina ação
-                if estado and not estado_anterior:
+                if state and not previous_state:
                     acao = "aberta"
-                elif not estado and estado_anterior:
-                    acao = "fechada"
+                elif not state and previous_state:
+                    action = "fechada"
                 else:
-                    acao = None
+                    action = None
 
                 # Atualiza se mudou
-                if acao:
+                if action:
                     self._db.execute(
                         "UPDATE gavetas SET esta_aberta = ?, ultima_atualizacao = CURRENT_TIMESTAMP WHERE id = ?",
-                        (estado, gaveta_id),
+                        (state, gaveta_id),
                     )
 
             # Registra histórico
-            if acao and usuario_id:
+            if action and usuario_id:
                 self._db.execute(
                     "INSERT INTO historico_gavetas (gaveta_id, acao, usuario_id) VALUES (?, ?, ?)",
-                    (gaveta_id, acao, usuario_id),
+                    (gaveta_id, action, usuario_id),
                 )
-            elif acao:
+            elif action:
                 self._db.execute(
                     "INSERT INTO historico_gavetas (gaveta_id, acao) VALUES (?, ?)",
-                    (gaveta_id, acao),
+                    (gaveta_id, action),
                 )
 
             self._db.commit()
-            return True, f"Gaveta {numero_gaveta} {acao or 'sem alteração'}"
+            return True, f"Gaveta {drawer_number} {action or 'sem alteração'}"
 
         except sqlite3.Error as e:
             logger.error(f"Database error setting drawer state: {e}")
             self._db.rollback()
             return False, f"Erro ao atualizar gaveta: {str(e)}"
 
-    def get_history(self, numero_gaveta: int, limit: int = 10) -> List[Tuple]:
+    def get_history(self, drawer_number: int, limit: int = 10) -> List[Tuple]:
         """
         Retorna o histórico de uma gaveta.
 
         Args:
-            numero_gaveta: Número da gaveta
+            drawer_number: Drawer number
             limit: Número máximo de registros
 
         Returns:
@@ -129,18 +129,18 @@ class GavetaRepository(IGavetaRepository):
             ORDER BY h.data_hora DESC
             LIMIT ?
         """,
-            (numero_gaveta, limit),
+            (drawer_number, limit),
         )
         return self._db.fetchall()
 
     def get_history_paginated(
-        self, numero_gaveta: int, offset: int = 0, limit: int = 20
+        self, drawer_number: int, offset: int = 0, limit: int = 20
     ) -> List[Tuple]:
         """
         Retorna o histórico de uma gaveta com paginação.
 
         Args:
-            numero_gaveta: Número da gaveta
+            drawer_number: Drawer number
             offset: Registros a pular
             limit: Número máximo de registros
 
@@ -156,16 +156,16 @@ class GavetaRepository(IGavetaRepository):
             ORDER BY h.data_hora DESC
             LIMIT ? OFFSET ?
         """,
-            (numero_gaveta, limit, offset),
+            (drawer_number, limit, offset),
         )
         return self._db.fetchall()
 
-    def count_history(self, numero_gaveta: int) -> int:
+    def count_history(self, drawer_number: int) -> int:
         """
         Retorna o total de registros de histórico para uma gaveta.
 
         Args:
-            numero_gaveta: Número da gaveta
+            drawer_number: Drawer number
 
         Returns:
             Número total de registros
@@ -176,7 +176,7 @@ class GavetaRepository(IGavetaRepository):
             FROM historico_gavetas
             WHERE gaveta_id = (SELECT id FROM gavetas WHERE numero_gaveta = ?)
         """,
-            (numero_gaveta,),
+            (drawer_number,),
         )
         return self._db.fetchone()[0]
 

@@ -111,19 +111,19 @@ def reset_database():
         # Cria usuário administrador padrão com bcrypt
         admin_username = os.getenv("OZEMPIC_ADMIN_USERNAME", "00")
         admin_password = os.getenv("OZEMPIC_ADMIN_PASSWORD", "admin@2025")
-        senha_hash = hash_password(admin_password)
+        password_hash = hash_password(admin_password)
         cursor.execute(
             "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo) VALUES (?, ?, ?, ?)",
-            (admin_username, senha_hash, "ADMINISTRADOR", "administrador"),
+            (admin_username, password_hash, "ADMINISTRADOR", "administrador"),
         )
 
         # Cria usuário técnico padrão
-        tecnico_username = os.getenv("OZEMPIC_TECNICO_USERNAME", "01")
-        tecnico_password = os.getenv("OZEMPIC_TECNICO_PASSWORD", "tecnico@2025")
-        senha_hash_tecnico = hash_password(tecnico_password)
+        technician_username = os.getenv("OZEMPIC_TECNICO_USERNAME", "01")
+        technician_password = os.getenv("OZEMPIC_TECNICO_PASSWORD", "tecnico@2025")
+        technician_password_hash = hash_password(technician_password)
         cursor.execute(
             "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo) VALUES (?, ?, ?, ?)",
-            (tecnico_username, senha_hash_tecnico, "TÉCNICO", "tecnico"),
+            (technician_username, technician_password_hash, "TÉCNICO", "tecnico"),
         )
 
         conn.commit()
@@ -131,7 +131,7 @@ def reset_database():
         print("\nBanco de dados recriado com sucesso!")
         print("\nCredenciais de acesso (conforme variáveis de ambiente):")
         print(f"  Administrador: {admin_username} / {admin_password}")
-        print(f"  Técnico: {tecnico_username} / {tecnico_password}")
+        print(f"  Técnico: {technician_username} / {technician_password}")
         print("\nPor segurança, altere as senhas após o primeiro login.")
 
         return True
@@ -152,9 +152,9 @@ if __name__ == "__main__":
     print("  2. Criar um novo banco de dados")
     print("  3. Adicionar usuários padrão (admin: 00/1234, técnico: 01/1234)\n")
 
-    confirmacao = input("Deseja continuar? (s/n): ").strip().lower()
+    confirmation = input("Deseja continuar? (s/n): ").strip().lower()
 
-    if confirmacao == "s":
+    if confirmation == "s":
         if reset_database():
             print("\nOperação concluída com sucesso!")
         else:

@@ -36,12 +36,12 @@ class ImageCache:
 class Header(customtkinter.CTkFrame):
     """Componente de cabeçalho reutilizável"""
 
-    def __init__(self, master, titulo, *args, **kwargs):
+    def __init__(self, master, title, *args, **kwargs):
         super().__init__(master, fg_color="white", corner_radius=0, height=80, *args, **kwargs)
         self.pack(fill="x", side="top")
 
         customtkinter.CTkLabel(
-            self, text=titulo, font=("Arial", 24, "bold"), text_color="black"
+            self, text=title, font=("Arial", 24, "bold"), text_color="black"
         ).pack(side="left", padx=20, pady=20)
 
         logo_img = ImageCache.get_logo()

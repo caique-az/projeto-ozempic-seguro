@@ -17,15 +17,15 @@ class LoginFrame(customtkinter.CTkFrame):
         self.auth_service = get_auth_service()
         self.timer_job = None
         # Não fazer pack aqui - NavigationController gerencia
-        self.criar_topo()
-        self.criar_interface_login()
-        self.criar_teclado_numerico()
-        self.criar_botao_voltar()
+        self.create_header()
+        self.create_login_interface()
+        self.create_numeric_keyboard()
+        self.create_back_button()
 
-    def criar_topo(self):
+    def create_header(self):
         Header(self, "Login")
 
-    def criar_interface_login(self):
+    def create_login_interface(self):
         frame_login = customtkinter.CTkFrame(self, fg_color=UIConfig.LOGIN_FRAME_COLOR)
         frame_login.place(x=UIConfig.LOGIN_FRAME_X, y=UIConfig.LOGIN_FRAME_Y)
 
@@ -33,21 +33,21 @@ class LoginFrame(customtkinter.CTkFrame):
         customtkinter.CTkLabel(
             frame_login, text="Usuário", font=("Arial", 16, "bold"), text_color="white"
         ).pack(anchor="w", pady=(0, 5))
-        self.usuario_entry = customtkinter.CTkEntry(
+        self.username_entry = customtkinter.CTkEntry(
             frame_login, width=UIConfig.LOGIN_ENTRY_WIDTH, height=UIConfig.LOGIN_ENTRY_HEIGHT
         )
-        self.usuario_entry.pack(pady=UIConfig.LOGIN_ENTRY_PADY)
-        self.usuario_entry.bind(
-            "<Button-1>", lambda e: self.definir_campo_ativo(self.usuario_entry)
+        self.username_entry.pack(pady=UIConfig.LOGIN_ENTRY_PADY)
+        self.username_entry.bind(
+            "<Button-1>", lambda e: self.set_active_field(self.username_entry)
         )
 
         # Campo de senha
         customtkinter.CTkLabel(
             frame_login, text="Senha", font=("Arial", 16, "bold"), text_color="white"
         ).pack(anchor="w", pady=(20, 5))
-        self.senha_entry = customtkinter.CTkEntry(frame_login, width=300, height=40, show="*")
-        self.senha_entry.pack(pady=10)
-        self.senha_entry.bind("<Button-1>", lambda e: self.definir_campo_ativo(self.senha_entry))
+        self.password_entry = customtkinter.CTkEntry(frame_login, width=300, height=40, show="*")
+        self.password_entry.pack(pady=10)
+        self.password_entry.bind("<Button-1>", lambda e: self.set_active_field(self.password_entry))
 
         # Label de status/avisos
         self.status_label = customtkinter.CTkLabel(
@@ -60,30 +60,30 @@ class LoginFrame(customtkinter.CTkFrame):
         self.status_label.pack(pady=(10, 0))
 
         # Campo ativo por padrão
-        self.campo_ativo = self.usuario_entry
+        self.active_field = self.username_entry
 
         # Bind para atualizar status quando usuário digita
-        self.usuario_entry.bind("<KeyRelease>", self.atualizar_status_login)
+        self.username_entry.bind("<KeyRelease>", self.update_login_status)
 
         # Define o foco no campo de usuário
-        self.after(100, lambda: self.usuario_entry.focus_set())
+        self.after(100, lambda: self.username_entry.focus_set())
 
-    def criar_botao_voltar(self):
+    def create_back_button(self):
         VoltarButton(self, self.show_iniciar_callback)
 
-    def criar_teclado_numerico(self):
-        teclado_frame = customtkinter.CTkFrame(self, fg_color=UIConfig.WHITE, corner_radius=20)
-        teclado_frame.place(x=UIConfig.LOGIN_KEYBOARD_X, y=UIConfig.LOGIN_KEYBOARD_Y)
-        botoes = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], ["", "0", ""]]
+    def create_numeric_keyboard(self):
+        keyboard_frame = customtkinter.CTkFrame(self, fg_color=UIConfig.WHITE, corner_radius=20)
+        keyboard_frame.place(x=UIConfig.LOGIN_KEYBOARD_X, y=UIConfig.LOGIN_KEYBOARD_Y)
+        buttons = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], ["", "0", ""]]
 
-        # Criar botões numéricos
-        for i, linha in enumerate(botoes):
-            for j, texto in enumerate(linha):
-                if texto:
+        # Create numeric buttons
+        for i, row in enumerate(buttons):
+            for j, text in enumerate(row):
+                if text:
                     btn = ModernButton(
-                        teclado_frame,
-                        text=texto,
-                        command=lambda t=texto: self.tecla(t),
+                        keyboard_frame,
+                        text=text,
+                        command=lambda t=text: self.key_press(t),
                         style="secondary",
                         width=90,
                         height=50,
@@ -91,14 +91,14 @@ class LoginFrame(customtkinter.CTkFrame):
                     )
                     btn.grid(row=i, column=j, padx=8, pady=8)
 
-        # Botões de ação na parte inferior
-        action_frame = customtkinter.CTkFrame(teclado_frame, fg_color="transparent")
+        # Action buttons at the bottom
+        action_frame = customtkinter.CTkFrame(keyboard_frame, fg_color="transparent")
         action_frame.grid(row=4, column=0, columnspan=3, pady=15)
 
         ModernButton(
             action_frame,
             text="🗑️ Apagar",
-            command=lambda: self.tecla("Apagar"),
+            command=lambda: self.key_press("Apagar"),
             style="warning",
             width=120,
             height=45,
@@ -107,7 +107,7 @@ class LoginFrame(customtkinter.CTkFrame):
         ModernButton(
             action_frame,
             text="❌ Cancelar",
-            command=lambda: self.tecla("Cancelar"),
+            command=lambda: self.key_press("Cancelar"),
             style="danger",
             width=120,
             height=45,
@@ -116,41 +116,41 @@ class LoginFrame(customtkinter.CTkFrame):
         ModernButton(
             action_frame,
             text="✅ Confirmar",
-            command=lambda: self.tecla("Confirmar"),
+            command=lambda: self.key_press("Confirmar"),
             style="success",
             width=120,
             height=45,
         ).pack(side="left", padx=5)
 
-    def verificar_login(self):
+    def verify_login(self):
         """Verifica credenciais usando AuthService"""
-        usuario = self.usuario_entry.get().strip()
-        senha = self.senha_entry.get()
+        usuario = self.username_entry.get().strip()
+        senha = self.password_entry.get()
 
         # Usa AuthService para toda a lógica de login
         result = self.auth_service.login(usuario, senha)
 
         if result.success:
             # Sucesso - abre painel apropriado
-            self._abrir_painel(result.panel)
+            self._open_panel(result.panel)
         else:
             # Falha - mostra mensagem de erro
             if result.is_locked:
                 messagebox.showerror("Conta Bloqueada", result.error_message)
-                self.iniciar_timer_bloqueio(usuario)
+                self.start_lockout_timer(usuario)
             else:
                 messagebox.showerror("Login Inválido", result.error_message)
 
             # Atualiza status visual
-            self.atualizar_status_login()
+            self.update_login_status()
 
-    def _abrir_painel(self, panel: UserPanel):
+    def _open_panel(self, panel: UserPanel):
         """Abre o painel apropriado baseado no tipo de usuário"""
         panel_handlers = {
-            UserPanel.ADMIN: self.abrir_painel_administrador,
-            UserPanel.REPOSITOR: self.abrir_painel_repositor,
-            UserPanel.VENDEDOR: self.abrir_painel_vendedor,
-            UserPanel.TECNICO: self.abrir_painel_tecnico,
+            UserPanel.ADMIN: self.open_admin_panel,
+            UserPanel.REPOSITOR: self.open_stocker_panel,
+            UserPanel.VENDEDOR: self.open_seller_panel,
+            UserPanel.TECNICO: self.open_technician_panel,
         }
 
         handler = panel_handlers.get(panel)
@@ -159,56 +159,56 @@ class LoginFrame(customtkinter.CTkFrame):
         else:
             messagebox.showinfo("Sucesso", "Login realizado com sucesso!")
 
-    def abrir_painel_tecnico(self):
+    def open_technician_panel(self):
         """Abre o painel do técnico"""
         self.pack_forget()
-        TecnicoFrame(self.master, finalizar_sessao_callback=self.show_iniciar_callback)
+        TecnicoFrame(self.master, end_session_callback=self.show_iniciar_callback)
 
-    def abrir_painel_vendedor(self):
+    def open_seller_panel(self):
         self.pack_forget()
-        VendedorFrame(self.master, finalizar_sessao_callback=self.show_iniciar_callback)
+        VendedorFrame(self.master, end_session_callback=self.show_iniciar_callback)
 
-    def abrir_painel_repositor(self):
+    def open_stocker_panel(self):
         self.pack_forget()
-        RepositorFrame(self.master, finalizar_sessao_callback=self.show_iniciar_callback)
+        RepositorFrame(self.master, end_session_callback=self.show_iniciar_callback)
 
-    def abrir_painel_administrador(self):
+    def open_admin_panel(self):
         self.pack_forget()
         # Get the current user from AuthService
-        usuario_logado = self.auth_service.get_current_user()
+        logged_in_user = self.auth_service.get_current_user()
         PainelAdministradorFrame(
             self.master,
-            finalizar_sessao_callback=self.show_iniciar_callback,
-            usuario_logado=usuario_logado,
+            end_session_callback=self.show_iniciar_callback,
+            logged_in_user=logged_in_user,
         )
 
-    def definir_campo_ativo(self, campo):
-        """Define qual campo está ativo para receber entrada do teclado"""
-        self.campo_ativo = campo
+    def set_active_field(self, field):
+        """Sets which field is active to receive keyboard input"""
+        self.active_field = field
 
-    def tecla(self, valor):
+    def key_press(self, valor):
         if valor == "Apagar":
-            if self.campo_ativo == self.usuario_entry:
-                self.usuario_entry.delete(len(self.usuario_entry.get()) - 1, tk.END)
+            if self.active_field == self.username_entry:
+                self.username_entry.delete(len(self.username_entry.get()) - 1, tk.END)
             else:
-                self.senha_entry.delete(len(self.senha_entry.get()) - 1, tk.END)
+                self.password_entry.delete(len(self.password_entry.get()) - 1, tk.END)
         elif valor == "Cancelar":
-            if self.campo_ativo == self.usuario_entry:
-                self.usuario_entry.delete(0, tk.END)
+            if self.active_field == self.username_entry:
+                self.username_entry.delete(0, tk.END)
             else:
-                self.senha_entry.delete(0, tk.END)
+                self.password_entry.delete(0, tk.END)
         elif valor == "Confirmar":
-            self.verificar_login()
+            self.verify_login()
         else:
             # Incrementa entrada no campo ativo
-            if self.campo_ativo == self.usuario_entry:
-                self.usuario_entry.insert(tk.END, valor)
+            if self.active_field == self.username_entry:
+                self.username_entry.insert(tk.END, valor)
             else:
-                self.senha_entry.insert(tk.END, valor)
+                self.password_entry.insert(tk.END, valor)
 
-    def atualizar_status_login(self, event=None):
+    def update_login_status(self, event=None):
         """Atualiza o status de login baseado no usuário digitado"""
-        usuario = self.usuario_entry.get().strip()
+        usuario = self.username_entry.get().strip()
 
         if not usuario:
             self.status_label.configure(
@@ -220,20 +220,20 @@ class LoginFrame(customtkinter.CTkFrame):
 
         if status["locked"]:
             self.status_label.configure(text=status["message"], text_color="#FF6B6B")
-            self.iniciar_timer_bloqueio(usuario)
+            self.start_lockout_timer(usuario)
         elif status["remaining_attempts"] < 3:
             self.status_label.configure(text=status["message"], text_color="#FFA500")
         else:
             self.status_label.configure(text=status["message"], text_color="#90EE90")
 
-    def iniciar_timer_bloqueio(self, usuario):
+    def start_lockout_timer(self, usuario):
         """Inicia timer visual para conta bloqueada"""
         if self.timer_job:
             self.after_cancel(self.timer_job)
 
-        self.atualizar_timer_bloqueio(usuario)
+        self.update_lockout_timer(usuario)
 
-    def atualizar_timer_bloqueio(self, usuario):
+    def update_lockout_timer(self, usuario):
         """Atualiza o timer de bloqueio em tempo real"""
         remaining_seconds = self.auth_service.get_lockout_remaining_seconds(usuario)
 
@@ -255,4 +255,4 @@ class LoginFrame(customtkinter.CTkFrame):
         )
 
         # Agenda próxima atualização
-        self.timer_job = self.after(1000, lambda: self.atualizar_timer_bloqueio(usuario))
+        self.timer_job = self.after(1000, lambda: self.update_lockout_timer(usuario))
