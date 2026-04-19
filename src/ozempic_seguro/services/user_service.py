@@ -141,7 +141,7 @@ class UserService(BaseService):
             username_valid = username_result.is_valid
             username_error = username_result.errors[0] if username_result.errors else ""
             password_valid = password_result.is_valid
-            password_result.errors[0] if password_result.errors else ""
+            password_error = password_result.errors[0] if password_result.errors else ""
 
             if not username_valid:
                 # Log tentativa com dados inválidos
