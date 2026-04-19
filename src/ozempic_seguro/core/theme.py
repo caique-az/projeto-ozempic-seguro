@@ -4,6 +4,7 @@ Sistema de temas para a interface do Ozempic Seguro.
 Separa as constantes de cores em classes de tema para facilitar
 customização e suporte a múltiplos temas no futuro.
 """
+
 from dataclasses import dataclass
 from typing import ClassVar
 

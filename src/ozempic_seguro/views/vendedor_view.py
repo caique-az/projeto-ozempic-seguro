@@ -1,6 +1,7 @@
 """
 Vendor view - allows only opening drawers.
 """
+
 from .base_user_view import BaseUserFrame
 
 

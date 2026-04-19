@@ -2,10 +2,11 @@
 Módulo para logs de segurança avançados com contexto local.
 Sistema completamente offline - sem conexões de rede.
 """
-import platform
+
 import datetime
+import platform
 import socket
-from typing import Optional, Dict, Any
+from typing import Any
 
 
 class SecurityLogger:
@@ -18,7 +19,7 @@ class SecurityLogger:
         return "127.0.0.1"
 
     @staticmethod
-    def get_system_info() -> Dict[str, str]:
+    def get_system_info() -> dict[str, str]:
         """Captura informações do sistema local"""
         import os
 
@@ -34,10 +35,10 @@ class SecurityLogger:
     @staticmethod
     def create_security_context(
         action: str,
-        user_id: Optional[int] = None,
-        username: Optional[str] = None,
-        additional_data: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        user_id: int | None = None,
+        username: str | None = None,
+        additional_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Cria contexto completo de segurança para logs
 
@@ -72,9 +73,9 @@ class SecurityLogger:
     def log_login_attempt(
         username: str,
         success: bool,
-        user_id: Optional[int] = None,
-        failure_reason: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        user_id: int | None = None,
+        failure_reason: str | None = None,
+    ) -> dict[str, Any]:
         """Log específico para tentativas de login"""
         additional_data = {"success": success, "attempt_time": datetime.datetime.now().isoformat()}
 
@@ -90,8 +91,8 @@ class SecurityLogger:
 
     @staticmethod
     def log_session_event(
-        event_type: str, user_id: int, username: str, session_duration: Optional[int] = None
-    ) -> Dict[str, Any]:
+        event_type: str, user_id: int, username: str, session_duration: int | None = None
+    ) -> dict[str, Any]:
         """Log específico para eventos de sessão"""
         additional_data = {
             "event_type": event_type,
@@ -113,10 +114,10 @@ class SecurityLogger:
         action: str,
         admin_user_id: int,
         admin_username: str,
-        target_user_id: Optional[int] = None,
-        target_username: Optional[str] = None,
-        changes: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        target_user_id: int | None = None,
+        target_username: str | None = None,
+        changes: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Log específico para gerenciamento de usuários"""
         additional_data = {"admin_action": action, "timestamp": datetime.datetime.now().isoformat()}
 
@@ -137,10 +138,10 @@ class SecurityLogger:
     @staticmethod
     def log_security_violation(
         violation_type: str,
-        user_id: Optional[int] = None,
-        username: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        user_id: int | None = None,
+        username: str | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """Log específico para violações de segurança"""
         additional_data = {
             "violation_type": violation_type,

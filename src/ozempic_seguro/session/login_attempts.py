@@ -1,8 +1,9 @@
 """
 Gerenciador de tentativas de login para controle de força bruta.
 """
+
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any
 
 from ..config import Config
 
@@ -18,7 +19,7 @@ class LoginAttemptsManager:
     """
 
     def __init__(self):
-        self._login_attempts: Dict[str, Dict] = {}
+        self._login_attempts: dict[str, dict] = {}
         self._max_login_attempts: int = Config.Security.MAX_LOGIN_ATTEMPTS
         self._lockout_duration: int = Config.Security.LOCKOUT_DURATION_MINUTES
 
@@ -94,7 +95,7 @@ class LoginAttemptsManager:
         remaining = self._max_login_attempts - used_attempts
         return max(0, remaining)
 
-    def get_status_message(self, username: str) -> Dict[str, Any]:
+    def get_status_message(self, username: str) -> dict[str, Any]:
         """Retorna mensagem personalizada sobre o status de login"""
         if self.is_locked(username):
             remaining_time = self.get_remaining_time_minutes(username)

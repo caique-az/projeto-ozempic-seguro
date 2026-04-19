@@ -3,13 +3,14 @@ Gerenciador de conexão com banco de dados.
 
 Responsabilidade única: gerenciar conexão SQLite e executar migrations.
 """
-import sqlite3
+
 import os
+import sqlite3
 import threading
 from typing import Optional
 
-from ..core.logger import logger, log_exceptions, DatabaseException
 from ..config import Config
+from ..core.logger import DatabaseException, log_exceptions, logger
 
 
 class DatabaseConnection:
@@ -123,7 +124,7 @@ class DatabaseConnection:
             path = os.path.join(migrations_dir, fname)
 
             try:
-                with open(path, "r", encoding="utf-8") as f:
+                with open(path, encoding="utf-8") as f:
                     self._conn.executescript(f.read())
                 self._cursor.execute(
                     "INSERT INTO migrations (version, name) VALUES (?, ?)", (version, fname)

@@ -2,11 +2,13 @@
 Sistema centralizado de validação com regras de negócio.
 Unifica todas as validações em um único módulo.
 """
-import re
+
 import html
-from typing import Optional, Tuple, List, Dict, Any, Callable
+import re
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 
 
 class ValidationRule:
@@ -17,7 +19,7 @@ class ValidationRule:
         self.validator = validator
         self.error_message = error_message
 
-    def validate(self, value: Any) -> Tuple[bool, Optional[str]]:
+    def validate(self, value: Any) -> tuple[bool, str | None]:
         """Executa validação e retorna resultado"""
         try:
             if self.validator(value):
@@ -41,8 +43,8 @@ class ValidationResult:
     """Resultado de uma validação"""
 
     is_valid: bool
-    errors: List[str]
-    sanitized_value: Optional[Any] = None
+    errors: list[str]
+    sanitized_value: Any | None = None
 
     def add_error(self, error: str) -> None:
         """Adiciona erro à lista"""
@@ -358,8 +360,8 @@ class Validators:
 
     @classmethod
     def validate_batch(
-        cls, validations: Dict[str, Tuple[Any, Callable]]
-    ) -> Dict[str, ValidationResult]:
+        cls, validations: dict[str, tuple[Any, Callable]]
+    ) -> dict[str, ValidationResult]:
         """
         Valida múltiplos campos de uma vez.
 
@@ -384,7 +386,7 @@ class Validators:
         return results
 
     @classmethod
-    def get_all_errors(cls, results: Dict[str, ValidationResult]) -> List[str]:
+    def get_all_errors(cls, results: dict[str, ValidationResult]) -> list[str]:
         """Extrai todos os erros de um batch de validações"""
         all_errors = []
 
@@ -395,18 +397,18 @@ class Validators:
         return all_errors
 
     @classmethod
-    def all_valid(cls, results: Dict[str, ValidationResult]) -> bool:
+    def all_valid(cls, results: dict[str, ValidationResult]) -> bool:
         """Verifica se todas as validações passaram"""
         return all(result.is_valid for result in results.values())
 
     @classmethod
     def validate_and_sanitize_user_input(
         cls,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        name: Optional[str] = None,
-        user_type: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        username: str | None = None,
+        password: str | None = None,
+        name: str | None = None,
+        user_type: str | None = None,
+    ) -> dict[str, Any]:
         """
         Valida e sanitiza entrada completa de usuário.
 

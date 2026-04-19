@@ -95,6 +95,7 @@ select = [
 ignore = [
     "E501",   # line too long (handled by black)
     "B008",   # function call in default argument
+    "B026",   # star-arg after keyword arg (unavoidable in CustomTkinter super().__init__)
 ]
 
 [tool.ruff.lint.isort]

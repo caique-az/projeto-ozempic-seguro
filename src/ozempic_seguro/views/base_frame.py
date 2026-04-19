@@ -1,8 +1,10 @@
 """
 BaseFrameView - Base class for frames with smooth transitions
 """
+
 import customtkinter
-from .components import Header, FinalizarSessaoButton, ModernConfirmDialog, ToastNotification
+
+from .components import FinalizarSessaoButton, Header, ModernConfirmDialog, ToastNotification
 
 
 class BaseFrameView(customtkinter.CTkFrame):

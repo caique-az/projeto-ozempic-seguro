@@ -1,8 +1,9 @@
 import customtkinter
-from ..components import Header, VoltarButton
-from ...services.user_management_service import get_user_management_service
+
 from ...core.base_views import AdminView
 from ...core.logger import logger
+from ...services.user_management_service import get_user_management_service
+from ..components import Header, VoltarButton
 
 
 class UsuariosView(AdminView):
@@ -46,7 +47,7 @@ class UsuariosView(AdminView):
         headers = ["ID", "Usuário", "Nome Completo", "Tipo", "Status", "Data de Criação"]
         widths = [0.1, 0.15, 0.25, 0.15, 0.1, 0.25]  # Proporções de largura
 
-        for i, (text, width) in enumerate(zip(headers, widths)):
+        for i, (text, width) in enumerate(zip(headers, widths, strict=False)):
             # Cria um frame para cada cabeçalho para melhor controle
             header_cell = customtkinter.CTkFrame(header_frame, fg_color="transparent")
             header_cell.pack(side="left", fill="x", expand=True)
@@ -84,9 +85,7 @@ class UsuariosView(AdminView):
         except Exception as e:
             logger.error(f"Error loading users: {e}")
 
-    def add_row(
-        self, parent, user_id, username, full_name, user_type, active, created_at, par
-    ):
+    def add_row(self, parent, user_id, username, full_name, user_type, active, created_at, par):
         # Format data
         status = "Ativo" if active else "Inativo"
         formatted_date = created_at.split(" ")[0]  # Get date only
@@ -98,7 +97,14 @@ class UsuariosView(AdminView):
         row_frame.pack(fill="x", padx=5, pady=2)
 
         # Row data
-        row_data = [str(user_id), username, full_name, user_type.capitalize(), status, formatted_date]
+        row_data = [
+            str(user_id),
+            username,
+            full_name,
+            user_type.capitalize(),
+            status,
+            formatted_date,
+        ]
 
         for text in row_data:
             lbl = customtkinter.CTkLabel(

@@ -1,13 +1,15 @@
-import customtkinter
 import tkinter as tk
+
+import customtkinter
+
+from ...services.user_registration_service import get_user_registration_service
 from ..components import (
     Header,
-    VoltarButton,
-    TecladoVirtual,
     ModernConfirmDialog,
+    TecladoVirtual,
     ToastNotification,
+    VoltarButton,
 )
-from ...services.user_registration_service import get_user_registration_service
 
 
 class CadastroUsuarioFrame(customtkinter.CTkFrame):

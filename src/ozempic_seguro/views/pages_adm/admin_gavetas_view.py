@@ -1,10 +1,11 @@
 import customtkinter
+
 from ..components import (
-    Header,
-    VoltarButton,
-    GavetaButtonGrid,
     GavetaButton,
+    GavetaButtonGrid,
+    Header,
     ToastNotification,
+    VoltarButton,
 )
 
 

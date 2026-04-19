@@ -1,5 +1,7 @@
-import customtkinter
 from tkinter import messagebox
+
+import customtkinter
+
 from .components import Header, VoltarButton
 
 

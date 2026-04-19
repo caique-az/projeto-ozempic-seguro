@@ -3,13 +3,13 @@ Serviço de gavetas: lógica de negócio para manipulação de gavetas.
 
 Responsável por gerenciar estado das gavetas e histórico de operações.
 """
-from typing import Optional, List, Tuple, Any
-from dataclasses import dataclass
 
+from dataclasses import dataclass
+from typing import Any
+
+from ..core.logger import logger
 from ..repositories.gaveta_repository import GavetaRepository
 from ..session.session_manager import SessionManager
-from ..core.logger import logger
-
 
 # =============================================================================
 # DTOs (Data Transfer Objects)
@@ -22,8 +22,8 @@ class DrawerState:
 
     numero: int
     is_open: bool
-    ultimo_usuario: Optional[str] = None
-    ultima_acao: Optional[str] = None
+    ultimo_usuario: str | None = None
+    ultima_acao: str | None = None
 
     @property
     def status_display(self) -> str:
@@ -66,7 +66,7 @@ class DrawerHistoryItem:
 class PaginatedResult:
     """Resultado paginado genérico"""
 
-    items: List[Any]
+    items: list[Any]
     total: int
     page: int
     per_page: int
@@ -128,19 +128,19 @@ class GavetaService:
         """Returns the current state of a drawer"""
         return self._repository.get_state(drawer_id)
 
-    def set_state(self, drawer_id: int, state: bool, user_type: str) -> Tuple[bool, str]:
+    def set_state(self, drawer_id: int, state: bool, user_type: str) -> tuple[bool, str]:
         """Sets the state of a drawer"""
         return self._repository.set_state(drawer_id, state, user_type)
 
     def close_drawer(
-        self, drawer_id: int, user_type: str, user_id: Optional[int] = None
-    ) -> Tuple[bool, str]:
+        self, drawer_id: int, user_type: str, user_id: int | None = None
+    ) -> tuple[bool, str]:
         """Closes a drawer (used by Repositor)"""
         return self._repository.set_state(drawer_id, False, user_type, user_id)
 
     def open_drawer(
-        self, drawer_id: int, user_type: str, user_id: Optional[int] = None
-    ) -> Tuple[bool, str]:
+        self, drawer_id: int, user_type: str, user_id: int | None = None
+    ) -> tuple[bool, str]:
         """
         Opens a drawer (used by Vendedor and Administrador).
 
@@ -180,13 +180,13 @@ class GavetaService:
             logger.error(f"Error opening drawer {drawer_id}: {e}")
             return False, f"Erro ao abrir a gaveta: {str(e)}"
 
-    def get_history(self, drawer_id: int, limit: int = 10) -> List[Tuple]:
+    def get_history(self, drawer_id: int, limit: int = 10) -> list[tuple]:
         """Gets the history of changes for a drawer"""
         return self._repository.get_history(drawer_id, limit)
 
     def get_history_paginated(
         self, drawer_id: int, offset: int = 0, limit: int = 20
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         """Gets the history of changes for a drawer with pagination"""
         return self._repository.get_history_paginated(drawer_id, offset, limit)
 
@@ -194,7 +194,7 @@ class GavetaService:
         """Returns the total number of history records for a drawer"""
         return self._repository.count_history(drawer_id)
 
-    def get_all_history(self) -> List[Tuple]:
+    def get_all_history(self) -> list[tuple]:
         """Returns all history from all drawers"""
         try:
             return self._repository.get_all_history()
@@ -202,7 +202,7 @@ class GavetaService:
             logger.error(f"Error fetching all history: {e}")
             return []
 
-    def get_all_history_paginated(self, offset: int = 0, limit: int = 20) -> List[Tuple]:
+    def get_all_history_paginated(self, offset: int = 0, limit: int = 20) -> list[tuple]:
         """Returns paginated history for all drawers"""
         return self._repository.get_all_history_paginated(offset, limit)
 

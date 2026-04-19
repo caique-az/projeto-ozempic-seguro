@@ -3,9 +3,11 @@ Gerenciador de sessão principal do sistema Ozempic Seguro.
 
 Responsável por controlar sessões de usuário, timeouts e bloqueios.
 """
-from datetime import datetime
+
 import threading
-from typing import Optional, Dict, Any, Callable
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any, Optional
 
 from ..config import Config
 from ..core.logger import logger
@@ -31,7 +33,7 @@ class SessionManager:
     _lock = threading.Lock()
 
     # Callback para auditoria (evita import circular)
-    _audit_callback: Optional[Callable[[int, str, str, Dict], None]] = None
+    _audit_callback: Callable[[int, str, str, dict], None] | None = None
 
     def __new__(cls) -> "SessionManager":
         if cls._instance is None:
@@ -43,17 +45,17 @@ class SessionManager:
 
     def _initialize(self) -> None:
         """Inicializa atributos da instância"""
-        self._current_user: Optional[Dict[str, Any]] = None
-        self._last_activity: Optional[datetime] = None
+        self._current_user: dict[str, Any] | None = None
+        self._last_activity: datetime | None = None
         self._session_timeout: int = Config.Security.SESSION_TIMEOUT_MINUTES
-        self._timeout_timer: Optional[threading.Timer] = None
+        self._timeout_timer: threading.Timer | None = None
 
         # Componentes delegados
         self._login_attempts = LoginAttemptsManager()
         self._timer = TimerManager()
 
     @classmethod
-    def set_audit_callback(cls, callback: Callable[[int, str, str, Dict], None]) -> None:
+    def set_audit_callback(cls, callback: Callable[[int, str, str, dict], None]) -> None:
         """Define callback para auditoria (evita import circular)."""
         cls._audit_callback = callback
 

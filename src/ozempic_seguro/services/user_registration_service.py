@@ -6,16 +6,16 @@ Responsabilidades:
 - Criar usuário
 - Retornar resultado estruturado
 """
-from typing import Optional, List
+
 from dataclasses import dataclass, field
 
-from .user_service import UserService
-from ..core.logger import logger
 from ..core.exceptions import (
-    UserAlreadyExistsError,
     InvalidUserDataError,
+    UserAlreadyExistsError,
     WeakPasswordError,
 )
+from ..core.logger import logger
+from .user_service import UserService
 
 
 @dataclass
@@ -24,8 +24,8 @@ class RegistrationResult:
 
     success: bool
     message: str = ""
-    errors: List[str] = field(default_factory=list)
-    user_id: Optional[int] = None
+    errors: list[str] = field(default_factory=list)
+    user_id: int | None = None
 
 
 class UserRegistrationService:
@@ -44,7 +44,9 @@ class UserRegistrationService:
     def __init__(self):
         self._user_service = UserService()
 
-    def register(self, name: str, username: str, password: str, user_type: str) -> RegistrationResult:
+    def register(
+        self, name: str, username: str, password: str, user_type: str
+    ) -> RegistrationResult:
         """
         Registra um novo usuário.
 
@@ -99,7 +101,7 @@ class UserRegistrationService:
 
     def _validate_registration_data(
         self, name: str, username: str, password: str, user_type: str
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Valida dados de registro.
 
@@ -162,7 +164,8 @@ class UserRegistrationService:
     def validate_password(self, password: str) -> bool:
         """Valida se a senha é válida"""
         return (
-            self.MIN_PASSWORD_LENGTH <= len(password) <= self.MAX_PASSWORD_LENGTH and password.isdigit()
+            self.MIN_PASSWORD_LENGTH <= len(password) <= self.MAX_PASSWORD_LENGTH
+            and password.isdigit()
         )
 
 

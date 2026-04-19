@@ -1,12 +1,13 @@
 """
 Sistema de logging estruturado para toda a aplicação
 """
+
 import logging
 import os
 import sys
 from datetime import datetime
-from typing import Optional, Dict, Any
 from functools import wraps
+from typing import Any
 
 
 class AppLogger:
@@ -56,23 +57,23 @@ class AppLogger:
             self._logger.addHandler(file_handler)
             self._logger.addHandler(console_handler)
 
-    def debug(self, message: str, extra: Optional[Dict[str, Any]] = None):
+    def debug(self, message: str, extra: dict[str, Any] | None = None):
         """Log de debug"""
         self._log_with_context(logging.DEBUG, message, extra)
 
-    def info(self, message: str, extra: Optional[Dict[str, Any]] = None):
+    def info(self, message: str, extra: dict[str, Any] | None = None):
         """Log informativo"""
         self._log_with_context(logging.INFO, message, extra)
 
-    def warning(self, message: str, extra: Optional[Dict[str, Any]] = None):
+    def warning(self, message: str, extra: dict[str, Any] | None = None):
         """Log de aviso"""
         self._log_with_context(logging.WARNING, message, extra)
 
-    def error(self, message: str, extra: Optional[Dict[str, Any]] = None, exc_info: bool = True):
+    def error(self, message: str, extra: dict[str, Any] | None = None, exc_info: bool = True):
         """Log de erro"""
         self._log_with_context(logging.ERROR, message, extra, exc_info)
 
-    def critical(self, message: str, extra: Optional[Dict[str, Any]] = None, exc_info: bool = True):
+    def critical(self, message: str, extra: dict[str, Any] | None = None, exc_info: bool = True):
         """Log crítico"""
         self._log_with_context(logging.CRITICAL, message, extra, exc_info)
 
@@ -80,7 +81,7 @@ class AppLogger:
         self,
         level: int,
         message: str,
-        extra: Optional[Dict[str, Any]] = None,
+        extra: dict[str, Any] | None = None,
         exc_info: bool = False,
     ):
         """Log com contexto adicional"""

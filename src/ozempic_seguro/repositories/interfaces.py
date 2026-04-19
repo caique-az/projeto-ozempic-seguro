@@ -2,8 +2,9 @@
 Interfaces e abstrações para o padrão Repository.
 Define contratos para implementações concretas.
 """
+
 from abc import ABC, abstractmethod
-from typing import Optional, List, Dict, Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -12,11 +13,11 @@ class IRepository(ABC, Generic[T]):
     """Interface base para todos os repositórios"""
 
     @abstractmethod
-    def find_by_id(self, entity_id: int) -> Optional[T]:
+    def find_by_id(self, entity_id: int) -> T | None:
         """Busca entidade por ID"""
 
     @abstractmethod
-    def find_all(self) -> List[T]:
+    def find_all(self) -> list[T]:
         """Busca todas as entidades"""
 
     @abstractmethod
@@ -32,19 +33,19 @@ class IRepository(ABC, Generic[T]):
         """Verifica se entidade existe"""
 
 
-class IUserRepository(IRepository[Dict[str, Any]]):
+class IUserRepository(IRepository[dict[str, Any]]):
     """Interface específica para repositório de usuários"""
 
     @abstractmethod
-    def find_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+    def find_by_username(self, username: str) -> dict[str, Any] | None:
         """Busca usuário por username"""
 
     @abstractmethod
-    def find_by_type(self, user_type: str) -> List[Dict[str, Any]]:
+    def find_by_type(self, user_type: str) -> list[dict[str, Any]]:
         """Busca usuários por tipo"""
 
     @abstractmethod
-    def find_active_users(self) -> List[Dict[str, Any]]:
+    def find_active_users(self) -> list[dict[str, Any]]:
         """Busca apenas usuários ativos"""
 
     @abstractmethod
@@ -56,45 +57,45 @@ class IUserRepository(IRepository[Dict[str, Any]]):
         """Atualiza status ativo/inativo do usuário"""
 
 
-class IAuditRepository(IRepository[Dict[str, Any]]):
+class IAuditRepository(IRepository[dict[str, Any]]):
     """Interface para repositório de auditoria"""
 
     @abstractmethod
     def log_action(
         self,
-        user_id: Optional[int],
+        user_id: int | None,
         action: str,
-        details: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        details: str | None = None,
+        ip_address: str | None = None,
     ) -> bool:
         """Registra ação de auditoria"""
 
     @abstractmethod
-    def find_by_user(self, user_id: int) -> List[Dict[str, Any]]:
+    def find_by_user(self, user_id: int) -> list[dict[str, Any]]:
         """Busca logs por usuário"""
 
     @abstractmethod
-    def find_by_action(self, action: str) -> List[Dict[str, Any]]:
+    def find_by_action(self, action: str) -> list[dict[str, Any]]:
         """Busca logs por tipo de ação"""
 
     @abstractmethod
-    def find_by_date_range(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+    def find_by_date_range(self, start_date: str, end_date: str) -> list[dict[str, Any]]:
         """Busca logs por período"""
 
 
-class IGavetaRepository(IRepository[Dict[str, Any]]):
+class IGavetaRepository(IRepository[dict[str, Any]]):
     """Interface para repositório de gavetas"""
 
     @abstractmethod
-    def find_by_numero(self, numero: int) -> Optional[Dict[str, Any]]:
+    def find_by_numero(self, numero: int) -> dict[str, Any] | None:
         """Busca gaveta por número"""
 
     @abstractmethod
-    def find_by_status(self, status: str) -> List[Dict[str, Any]]:
+    def find_by_status(self, status: str) -> list[dict[str, Any]]:
         """Busca gavetas por status"""
 
     @abstractmethod
-    def find_by_user(self, user_id: int) -> List[Dict[str, Any]]:
+    def find_by_user(self, user_id: int) -> list[dict[str, Any]]:
         """Busca gavetas de um usuário"""
 
     @abstractmethod
@@ -110,7 +111,7 @@ class IService(ABC):
     """Interface base para serviços"""
 
     @abstractmethod
-    def validate_input(self, data: Dict[str, Any]) -> tuple[bool, List[str]]:
+    def validate_input(self, data: dict[str, Any]) -> tuple[bool, list[str]]:
         """
         Valida dados de entrada.
 
@@ -123,13 +124,13 @@ class IUserService(IService):
     """Interface para serviço de usuários"""
 
     @abstractmethod
-    def authenticate(self, username: str, password: str) -> Optional[Dict[str, Any]]:
+    def authenticate(self, username: str, password: str) -> dict[str, Any] | None:
         """Autentica usuário"""
 
     @abstractmethod
     def create_user(
         self, username: str, password: str, nome_completo: str, tipo: str
-    ) -> tuple[bool, Optional[str]]:
+    ) -> tuple[bool, str | None]:
         """
         Cria novo usuário.
 
@@ -146,7 +147,7 @@ class IUserService(IService):
         """Alterna status ativo/inativo"""
 
     @abstractmethod
-    def delete_user(self, user_id: int) -> tuple[bool, Optional[str]]:
+    def delete_user(self, user_id: int) -> tuple[bool, str | None]:
         """
         Remove usuário.
 
@@ -155,11 +156,11 @@ class IUserService(IService):
         """
 
     @abstractmethod
-    def get_all_users(self) -> List[Dict[str, Any]]:
+    def get_all_users(self) -> list[dict[str, Any]]:
         """Lista todos os usuários"""
 
     @abstractmethod
-    def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
+    def get_user_by_id(self, user_id: int) -> dict[str, Any] | None:
         """Busca usuário por ID"""
 
     @abstractmethod
@@ -171,21 +172,19 @@ class IAuditService(IService):
     """Interface para serviço de auditoria"""
 
     @abstractmethod
-    def log_action(
-        self, user_id: Optional[int], action: str, details: Optional[str] = None
-    ) -> bool:
+    def log_action(self, user_id: int | None, action: str, details: str | None = None) -> bool:
         """Registra ação para auditoria"""
 
     @abstractmethod
-    def get_user_logs(self, user_id: int) -> List[Dict[str, Any]]:
+    def get_user_logs(self, user_id: int) -> list[dict[str, Any]]:
         """Obtém logs de um usuário"""
 
     @abstractmethod
-    def get_recent_logs(self, limit: int = 100) -> List[Dict[str, Any]]:
+    def get_recent_logs(self, limit: int = 100) -> list[dict[str, Any]]:
         """Obtém logs recentes"""
 
     @abstractmethod
-    def get_logs_by_action(self, action: str) -> List[Dict[str, Any]]:
+    def get_logs_by_action(self, action: str) -> list[dict[str, Any]]:
         """Obtém logs por tipo de ação"""
 
     @abstractmethod

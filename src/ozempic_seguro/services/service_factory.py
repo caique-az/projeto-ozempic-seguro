@@ -18,13 +18,15 @@ Exemplo de uso:
     # Para testes - injetar mocks
     ServiceFactory.set_mock_user_service(mock_service)
 """
+
 from __future__ import annotations
 
-from typing import Dict, Any, TypeVar, Callable, cast
 import threading
+from collections.abc import Callable
+from typing import Any, TypeVar, cast
 
-from ..core.logger import logger, log_exceptions
 from ..config import Config
+from ..core.logger import log_exceptions, logger
 
 # Type variables para generic typing
 T = TypeVar("T")
@@ -35,8 +37,8 @@ class ServiceRegistry:
     """Registry thread-safe para gerenciar instâncias de serviços"""
 
     def __init__(self):
-        self._services: Dict[str, Any] = {}
-        self._mocks: Dict[str, Any] = {}
+        self._services: dict[str, Any] = {}
+        self._mocks: dict[str, Any] = {}
         self._lock = threading.Lock()
         self._config_validated = False
 
@@ -187,7 +189,7 @@ class ServiceFactory:
         _registry.reset_services()
 
     @staticmethod
-    def get_service_status() -> Dict[str, bool]:
+    def get_service_status() -> dict[str, bool]:
         """Retorna status dos serviços carregados"""
         with _registry._lock:
             return {

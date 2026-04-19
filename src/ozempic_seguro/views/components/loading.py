@@ -3,8 +3,10 @@ Componentes de Loading/Splash Screen.
 
 Fornece overlay de carregamento para esconder o render das telas.
 """
+
+from collections.abc import Callable
+
 import customtkinter
-from typing import Optional, Callable
 
 
 class LoadingOverlay(customtkinter.CTkFrame):
@@ -219,7 +221,7 @@ class TransitionOverlay(customtkinter.CTkFrame):
         self._alpha = 0.0
         self.place_forget()
 
-    def fade_in(self, duration_ms: int = 200, callback: Optional[Callable] = None) -> None:
+    def fade_in(self, duration_ms: int = 200, callback: Callable | None = None) -> None:
         """
         Fade in do overlay (escurece a tela).
 
@@ -231,7 +233,7 @@ class TransitionOverlay(customtkinter.CTkFrame):
         self.lift()
         self._animate_fade(0.0, 1.0, duration_ms, callback)
 
-    def fade_out(self, duration_ms: int = 200, callback: Optional[Callable] = None) -> None:
+    def fade_out(self, duration_ms: int = 200, callback: Callable | None = None) -> None:
         """
         Fade out do overlay (clareia a tela).
 
@@ -241,14 +243,14 @@ class TransitionOverlay(customtkinter.CTkFrame):
         """
         self._animate_fade(1.0, 0.0, duration_ms, lambda: self._on_fade_out_complete(callback))
 
-    def _on_fade_out_complete(self, callback: Optional[Callable]) -> None:
+    def _on_fade_out_complete(self, callback: Callable | None) -> None:
         """Chamado quando fade out completa."""
         self.place_forget()
         if callback:
             callback()
 
     def _animate_fade(
-        self, start: float, end: float, duration_ms: int, callback: Optional[Callable]
+        self, start: float, end: float, duration_ms: int, callback: Callable | None
     ) -> None:
         """Anima o fade."""
         steps = 10

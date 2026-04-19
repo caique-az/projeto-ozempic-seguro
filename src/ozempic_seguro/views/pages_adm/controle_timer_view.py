@@ -2,10 +2,12 @@
 Tela de Controle de Timer - Exclusiva para usuários técnicos.
 Permite desativar temporariamente o timer enquanto o técnico está logado.
 """
+
 import customtkinter
-from ..components import Header, VoltarButton, ModernConfirmDialog, ToastNotification
-from ...services.timer_control_service import get_timer_control_service
+
 from ...services.auth_service import get_auth_service
+from ...services.timer_control_service import get_timer_control_service
+from ..components import Header, ModernConfirmDialog, ToastNotification, VoltarButton
 
 
 class ControleTimerFrame(customtkinter.CTkFrame):

@@ -3,25 +3,26 @@ Serviço de usuários: camada de negócio isolada entre controllers e repositori
 
 Utiliza exceções customizadas para tratamento de erros consistente.
 """
-from typing import Optional, Tuple, List, Dict, Any
-import datetime
 
-from ..repositories.user_repository import UserRepository
-from ..repositories.audit_repository import AuditRepository
-from ..repositories.security_logger import SecurityLogger
-from ..core.validators import Validators
+import datetime
+from typing import Any
+
 from ..config import SecurityConfig
 from ..core.base_views import BaseService
 from ..core.exceptions import (
-    UserNotFoundError,
-    UserAlreadyExistsError,
-    LastAdminError,
-    InvalidCredentialsError,
     AccountLockedError,
-    WeakPasswordError,
-    InvalidUserDataError,
     InsufficientPermissionsError,
+    InvalidCredentialsError,
+    InvalidUserDataError,
+    LastAdminError,
+    UserAlreadyExistsError,
+    UserNotFoundError,
+    WeakPasswordError,
 )
+from ..core.validators import Validators
+from ..repositories.audit_repository import AuditRepository
+from ..repositories.security_logger import SecurityLogger
+from ..repositories.user_repository import UserRepository
 
 
 class UserService(BaseService):
@@ -36,8 +37,8 @@ class UserService(BaseService):
         username: str,
         password: str,
         user_type: str,
-        creator_user_id: Optional[int] = None,
-    ) -> Tuple[bool, str]:
+        creator_user_id: int | None = None,
+    ) -> tuple[bool, str]:
         """
         Cadastra um novo usuário com validações robustas e registra log de auditoria.
 
@@ -100,7 +101,7 @@ class UserService(BaseService):
         except Exception as e:
             raise InvalidUserDataError("database", f"Erro ao cadastrar usuário: {str(e)}")
 
-    def _validate_input(self, validation_data: Dict) -> bool:
+    def _validate_input(self, validation_data: dict) -> bool:
         """Implementação da validação de entrada obrigatória da classe base"""
         required_fields = ["username", "senha", "nome", "tipo"]
 
@@ -110,12 +111,13 @@ class UserService(BaseService):
                 return False
 
         # Validar tipo de usuário
-        if validation_data["tipo"] not in SecurityConfig.VALID_USER_TYPES:
-            return False
+        return validation_data["tipo"] in SecurityConfig.VALID_USER_TYPES
 
         return True
 
-    def authenticate(self, username: str, password: str, ip_address: Optional[str] = None) -> Dict[str, Any]:
+    def authenticate(
+        self, username: str, password: str, ip_address: str | None = None
+    ) -> dict[str, Any]:
         """
         Autentica usuário com validação robusta, controle de força bruta e logs detalhados.
 
@@ -162,7 +164,9 @@ class UserService(BaseService):
                 raise InvalidCredentialsError(username, "Formato de usuário inválido")
 
             if not password_valid:
-                raise InvalidCredentialsError(username, "Formato de senha inválido")
+                raise InvalidCredentialsError(
+                    username, password_error or "Formato de senha inválido"
+                )
 
         # Verificar se usuário está bloqueado por tentativas excessivas
         from ..session.session_manager import SessionManager
@@ -223,7 +227,7 @@ class UserService(BaseService):
             )
             raise InvalidCredentialsError(username)
 
-    def logout(self, user_id: int, username: str, ip_address: Optional[str] = None) -> None:
+    def logout(self, user_id: int, username: str, ip_address: str | None = None) -> None:
         """Registra logout de usuário com contexto de segurança."""
         security_context = SecurityLogger.log_session_event(
             event_type="LOGOUT", user_id=user_id, username=username
@@ -238,7 +242,7 @@ class UserService(BaseService):
             ip_address=security_context.get("ip_address", ip_address),
         )
 
-    def delete_user(self, user_id: int) -> Tuple[bool, str]:
+    def delete_user(self, user_id: int) -> tuple[bool, str]:
         """
         Exclui usuário e registra auditoria.
 
@@ -272,14 +276,14 @@ class UserService(BaseService):
             return True, "Usuário excluído com sucesso!"
         raise UserNotFoundError(user_id)
 
-    def get_all_users(self) -> List[Dict[Any, Any]]:
+    def get_all_users(self) -> list[dict[Any, Any]]:
         """Retorna lista de todos os usuários."""
         result = self.user_repo.get_users()
         return list(result) if result else []
 
     def update_password(
-        self, user_id: int, new_password: str, admin_user_id: Optional[int] = None
-    ) -> Tuple[bool, str]:
+        self, user_id: int, new_password: str, admin_user_id: int | None = None
+    ) -> tuple[bool, str]:
         """
         Atualiza senha de usuário com validação robusta e registra auditoria.
 

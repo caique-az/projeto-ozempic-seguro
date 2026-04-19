@@ -1,9 +1,11 @@
 """
 Componentes de botões: ModernButton, VoltarButton, FinalizarSessaoButton
 """
+
+import os
+
 import customtkinter
 from PIL import Image
-import os
 
 
 class ModernButton(customtkinter.CTkButton):

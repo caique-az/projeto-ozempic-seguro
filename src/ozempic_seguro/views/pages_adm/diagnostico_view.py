@@ -2,7 +2,9 @@
 Tela de Diagnóstico - Mostruário de gavetas conectadas.
 Mostra status de até 8 gavetas (conectadas/vazias, abertas/fechadas, funcionamento).
 """
+
 import customtkinter
+
 from ..components import Header, VoltarButton
 
 

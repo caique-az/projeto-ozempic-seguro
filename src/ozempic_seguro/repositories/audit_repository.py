@@ -3,14 +3,15 @@ Repositório de auditoria: registros de ações do sistema.
 
 Implementa IAuditRepository com lógica de persistência para logs de auditoria.
 """
+
 import json
 import sqlite3
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Any
 
+from ..core.logger import logger
 from .connection import DatabaseConnection
 from .interfaces import IAuditRepository
-from ..core.logger import logger
 
 
 class AuditRepository(IAuditRepository):
@@ -28,14 +29,14 @@ class AuditRepository(IAuditRepository):
 
     def create_log(
         self,
-        user_id: Optional[int] = None,
-        action: Optional[str] = None,
-        affected_table: Optional[str] = None,
-        id_afetado: Optional[int] = None,
-        previous_data: Optional[Dict] = None,
-        new_data: Optional[Dict] = None,
-        ip_address: Optional[str] = None,
-    ) -> Optional[int]:
+        user_id: int | None = None,
+        action: str | None = None,
+        affected_table: str | None = None,
+        id_afetado: int | None = None,
+        previous_data: dict | None = None,
+        new_data: dict | None = None,
+        ip_address: str | None = None,
+    ) -> int | None:
         """
         Records an audit log entry and returns the record ID.
 
@@ -52,9 +53,7 @@ class AuditRepository(IAuditRepository):
             ID do registro criado ou None se falhar
         """
         try:
-            prev_json = (
-                json.dumps(previous_data, ensure_ascii=False) if previous_data else None
-            )
+            prev_json = json.dumps(previous_data, ensure_ascii=False) if previous_data else None
             new_json = json.dumps(new_data, ensure_ascii=False) if new_data else None
 
             self._db.execute(
@@ -78,12 +77,12 @@ class AuditRepository(IAuditRepository):
         self,
         offset: int = 0,
         limit: int = 50,
-        user_filter: Optional[int] = None,
-        action_filter: Optional[str] = None,
-        table_filter: Optional[str] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+        user_filter: int | None = None,
+        action_filter: str | None = None,
+        table_filter: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Returns audit logs with filters and pagination.
 
@@ -109,7 +108,7 @@ class AuditRepository(IAuditRepository):
                 LEFT JOIN usuarios u ON a.usuario_id = u.id
                 WHERE 1=1
             """
-            params: List[Any] = []
+            params: list[Any] = []
 
             if user_filter is not None:
                 query += " AND a.usuario_id = ?"
@@ -135,7 +134,7 @@ class AuditRepository(IAuditRepository):
 
             results = []
             for row in self._db.fetchall():
-                result = dict(zip(columns, row))
+                result = dict(zip(columns, row, strict=False))
 
                 # Parse JSON fields
                 if result.get("dados_anteriores"):
@@ -161,11 +160,11 @@ class AuditRepository(IAuditRepository):
 
     def count_logs(
         self,
-        user_filter: Optional[int] = None,
-        action_filter: Optional[str] = None,
-        table_filter: Optional[str] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
+        user_filter: int | None = None,
+        action_filter: str | None = None,
+        table_filter: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
     ) -> int:
         """
         Returns the total number of logs matching the filters.
@@ -182,7 +181,7 @@ class AuditRepository(IAuditRepository):
         """
         try:
             query = "SELECT COUNT(*) FROM auditoria a WHERE 1=1"
-            params: List[Any] = []
+            params: list[Any] = []
 
             if user_filter is not None:
                 query += " AND a.usuario_id = ?"
@@ -208,7 +207,7 @@ class AuditRepository(IAuditRepository):
             return 0
 
     # Métodos da interface IRepository
-    def find_by_id(self, entity_id: int) -> Optional[Dict[str, Any]]:
+    def find_by_id(self, entity_id: int) -> dict[str, Any] | None:
         """Implementação de IRepository.find_by_id"""
         self._db.execute("SELECT * FROM auditoria WHERE id = ?", (entity_id,))
         row = self._db.fetchone()
@@ -216,11 +215,11 @@ class AuditRepository(IAuditRepository):
             return {"id": row[0], "usuario_id": row[1], "acao": row[2], "data_hora": row[3]}
         return None
 
-    def find_all(self) -> List[Dict[str, Any]]:
+    def find_all(self) -> list[dict[str, Any]]:
         """Implementação de IRepository.find_all"""
         return self.get_logs(limit=1000)
 
-    def save(self, entity: Dict[str, Any]) -> bool:
+    def save(self, entity: dict[str, Any]) -> bool:
         """Implementação de IRepository.save"""
         result = self.create_log(
             user_id=entity.get("usuario_id"),
@@ -241,10 +240,10 @@ class AuditRepository(IAuditRepository):
     # Métodos da interface IAuditRepository
     def log_action(
         self,
-        user_id: Optional[int],
+        user_id: int | None,
         action: str,
-        details: Optional[str] = None,
-        ip_address: Optional[str] = None,
+        details: str | None = None,
+        ip_address: str | None = None,
     ) -> bool:
         """Implementação de IAuditRepository.log_action"""
         result = self.create_log(
@@ -255,14 +254,14 @@ class AuditRepository(IAuditRepository):
         )
         return result is not None
 
-    def find_by_user(self, user_id: int) -> List[Dict[str, Any]]:
+    def find_by_user(self, user_id: int) -> list[dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_user"""
         return self.get_logs(user_filter=user_id)
 
-    def find_by_action(self, action: str) -> List[Dict[str, Any]]:
+    def find_by_action(self, action: str) -> list[dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_action"""
         return self.get_logs(action_filter=action)
 
-    def find_by_date_range(self, start_date: str, end_date: str) -> List[Dict[str, Any]]:
+    def find_by_date_range(self, start_date: str, end_date: str) -> list[dict[str, Any]]:
         """Implementação de IAuditRepository.find_by_date_range"""
         return self.get_logs(start_date=start_date, end_date=end_date)

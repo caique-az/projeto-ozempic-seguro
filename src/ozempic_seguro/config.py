@@ -1,8 +1,9 @@
 """
 Configurações centralizadas do sistema Ozempic Seguro
 """
-import os
+
 import logging
+import os
 
 # Logger para este módulo (não usa core.logger para evitar dependência circular)
 _config_logger = logging.getLogger(__name__)

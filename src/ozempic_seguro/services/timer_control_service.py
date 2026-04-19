@@ -7,11 +7,11 @@ Responsabilidades:
 - Obter tempo restante
 - Gerenciar estado do timer
 """
-from typing import Tuple
+
 from dataclasses import dataclass
 
-from ..session.session_manager import SessionManager
 from ..core.logger import logger
+from ..session.session_manager import SessionManager
 
 
 @dataclass
@@ -71,7 +71,7 @@ class TimerControlService:
             remaining_minutes=remaining // 60,
         )
 
-    def enable_timer(self) -> Tuple[bool, str]:
+    def enable_timer(self) -> tuple[bool, str]:
         """
         Habilita o timer.
 
@@ -86,7 +86,7 @@ class TimerControlService:
             logger.error(f"Error enabling timer: {e}")
             return False, f"Erro ao habilitar timer: {str(e)}"
 
-    def disable_timer(self) -> Tuple[bool, str]:
+    def disable_timer(self) -> tuple[bool, str]:
         """
         Desabilita o timer.
 
@@ -101,7 +101,7 @@ class TimerControlService:
             logger.error(f"Error disabling timer: {e}")
             return False, f"Erro ao desabilitar timer: {str(e)}"
 
-    def toggle_timer(self) -> Tuple[bool, str, bool]:
+    def toggle_timer(self) -> tuple[bool, str, bool]:
         """
         Alterna estado do timer.
 
@@ -117,7 +117,7 @@ class TimerControlService:
 
         return success, msg, not current
 
-    def block_system(self, minutes: int) -> Tuple[bool, str]:
+    def block_system(self, minutes: int) -> tuple[bool, str]:
         """
         Bloqueia o sistema por um período.
 
@@ -138,7 +138,7 @@ class TimerControlService:
             logger.error(f"Error blocking system: {e}")
             return False, f"Erro ao bloquear sistema: {str(e)}"
 
-    def unblock_system(self) -> Tuple[bool, str]:
+    def unblock_system(self) -> tuple[bool, str]:
         """
         Desbloqueia o sistema.
 

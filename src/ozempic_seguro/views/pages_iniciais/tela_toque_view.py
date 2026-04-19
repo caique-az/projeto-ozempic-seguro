@@ -1,6 +1,7 @@
+import os
+
 import customtkinter
 from PIL import Image
-import os
 
 # Cache de imagem para evitar recarregamento
 _dedo_img_cache = None

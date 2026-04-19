@@ -1,13 +1,16 @@
 """
 Classes base abstratas para eliminar código duplicado nas views
 """
+
 from abc import ABC, abstractmethod
-from typing import Optional, Callable, Any, Dict
+from collections.abc import Callable
+from typing import Any
+
 import customtkinter
 
-from ..core.logger import logger, log_exceptions, log_method_call
-from ..services.service_factory import ServiceFactory
 from ..config import Config
+from ..core.logger import log_exceptions, log_method_call, logger
+from ..services.service_factory import ServiceFactory
 
 
 class BaseView(customtkinter.CTkFrame, ABC):
@@ -51,7 +54,7 @@ class BaseView(customtkinter.CTkFrame, ABC):
 class AdminView(BaseView):
     """Classe base para views administrativas"""
 
-    def __init__(self, master, back_callback: Optional[Callable] = None, **kwargs):
+    def __init__(self, master, back_callback: Callable | None = None, **kwargs):
         self.back_callback = back_callback
         super().__init__(master, **kwargs)
 
@@ -86,7 +89,7 @@ class AdminView(BaseView):
 class UserRoleView(BaseView):
     """Classe base para views específicas de papel do usuário (vendedor, repositor, etc.)"""
 
-    def __init__(self, master, end_session_callback: Optional[Callable] = None, **kwargs):
+    def __init__(self, master, end_session_callback: Callable | None = None, **kwargs):
         self.end_session_callback = end_session_callback
         super().__init__(master, **kwargs)
 
@@ -117,7 +120,7 @@ class UserRoleView(BaseView):
 class InitialScreenView(BaseView):
     """Classe base para telas iniciais (logo, toque, etc.)"""
 
-    def __init__(self, master, on_click_callback: Optional[Callable] = None, **kwargs):
+    def __init__(self, master, on_click_callback: Callable | None = None, **kwargs):
         self.on_click_callback = on_click_callback
 
         # Override da cor padrão para telas iniciais
@@ -214,7 +217,7 @@ class BaseRepository(ABC):
         return self._database_manager
 
     @abstractmethod
-    def _validate_data(self, data: Dict[str, Any]) -> bool:
+    def _validate_data(self, data: dict[str, Any]) -> bool:
         """Método abstrato para validação de dados"""
 
     @log_exceptions("Repository Operation")
@@ -246,12 +249,12 @@ class BaseRepository(ABC):
 class ConfigurableComponent(ABC):
     """Classe base para componentes configuráveis"""
 
-    def __init__(self, config_section: Optional[str] = None):
+    def __init__(self, config_section: str | None = None):
         self.config_section = config_section
         self._config = Config
         self._logger = logger
 
-    def get_config_value(self, key: str, default: Optional[Any] = None) -> Any:
+    def get_config_value(self, key: str, default: Any | None = None) -> Any:
         """
         Obtém valor de configuração de forma segura
 
@@ -292,7 +295,7 @@ class ValidatedMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def validate_user_input(self, input_data: Dict[str, Any]) -> bool:
+    def validate_user_input(self, input_data: dict[str, Any]) -> bool:
         """Valida entrada do usuário usando Validators"""
         from .validators import Validators
 
@@ -323,7 +326,7 @@ class AuditedMixin:
             self._security_logger = ServiceFactory.get_security_logger()
         return self._security_logger
 
-    def log_user_action(self, action: str, context: Optional[Dict[str, Any]] = None) -> None:
+    def log_user_action(self, action: str, context: dict[str, Any] | None = None) -> None:
         """Registra ação do usuário para auditoria"""
         try:
             self.security_logger.log_user_action(action, context or {})

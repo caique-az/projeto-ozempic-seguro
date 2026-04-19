@@ -1,9 +1,10 @@
 import customtkinter
+
+from ..services.timer_control_service import get_timer_control_service
 from .base_frame import BaseFrameView
 from .components import ModernButton, ToastNotification
-from .pages_adm.diagnostico_view import DiagnosticoFrame
 from .pages_adm.controle_timer_view import ControleTimerFrame
-from ..services.timer_control_service import get_timer_control_service
+from .pages_adm.diagnostico_view import DiagnosticoFrame
 
 
 class TecnicoFrame(BaseFrameView):

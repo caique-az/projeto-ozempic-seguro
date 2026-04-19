@@ -1,14 +1,16 @@
 """
 Drawer components: GavetaButton, GavetaButtonGrid
 """
-import customtkinter
-from tkinter import messagebox
-from PIL import Image
-import os
 
+import os
+from tkinter import messagebox
+
+import customtkinter
+from PIL import Image
+
+from ...services.auth_service import get_auth_service
 from ...services.gaveta_service import GavetaService
 from ...services.timer_control_service import get_timer_control_service
-from ...services.auth_service import get_auth_service
 
 
 # Global cache for drawer images
@@ -227,9 +229,7 @@ class GavetaButton:
             main_frame, text=f"Histórico - Gaveta {self.gaveta_id}", font=("Arial", 14, "bold")
         ).pack(pady=(0, 10))
 
-        self.history_frame = customtkinter.CTkScrollableFrame(
-            main_frame, fg_color="transparent"
-        )
+        self.history_frame = customtkinter.CTkScrollableFrame(main_frame, fg_color="transparent")
         self.history_frame.pack(fill="both", expand=True)
 
         controls_frame = customtkinter.CTkFrame(main_frame, fg_color="transparent")
@@ -268,9 +268,7 @@ class GavetaButton:
 
         self.lbl_page.configure(text=f"Página {self.current_page} de {total_pages}")
         self.btn_previous.configure(state="disabled" if self.current_page == 1 else "normal")
-        self.btn_next.configure(
-            state="disabled" if self.current_page >= total_pages else "normal"
-        )
+        self.btn_next.configure(state="disabled" if self.current_page >= total_pages else "normal")
 
         if not history_raw:
             customtkinter.CTkLabel(

@@ -1,8 +1,8 @@
 """
 Gerenciador de timer e bloqueio do sistema.
 """
+
 from datetime import datetime, timedelta
-from typing import Optional
 
 
 class TimerManager:
@@ -15,7 +15,7 @@ class TimerManager:
     """
 
     def __init__(self):
-        self._blocked_until: Optional[datetime] = None
+        self._blocked_until: datetime | None = None
         self._timer_enabled: bool = True
 
     def is_blocked(self) -> bool:

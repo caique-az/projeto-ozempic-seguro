@@ -1,10 +1,11 @@
 import customtkinter
-from ..views.pages_iniciais.tela_toque_view import TelaToqueFrame
-from ..views.pages_iniciais.tela_logo_view import TelaLogoFrame
+
+from ..core.logger import logger
+from ..session.session_manager import SessionManager
 from ..views.iniciar_sessao_view import IniciarSessaoFrame
 from ..views.login_view import LoginFrame
-from ..session.session_manager import SessionManager
-from ..core.logger import logger
+from ..views.pages_iniciais.tela_logo_view import TelaLogoFrame
+from ..views.pages_iniciais.tela_toque_view import TelaToqueFrame
 
 
 class NavigationController:

@@ -13,8 +13,8 @@ Uso:
     except AuthenticationError as e:
         logger.error(f"Auth failed: {e}")
 """
-from typing import Optional, Dict, Any
 
+from typing import Any
 
 # =============================================================================
 # Base Exception
@@ -35,14 +35,14 @@ class OzempicError(Exception):
         self,
         message: str = "Erro interno do sistema",
         code: str = "OZEMPIC_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         self.message = message
         self.code = code
         self.details = details or {}
         super().__init__(self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Converte exceção para dicionário (útil para logs e APIs)"""
         return {
             "error": self.__class__.__name__,
@@ -69,7 +69,7 @@ class AuthenticationError(OzempicError):
         self,
         message: str = "Falha na autenticação",
         code: str = "AUTH_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -77,7 +77,7 @@ class AuthenticationError(OzempicError):
 class InvalidCredentialsError(AuthenticationError):
     """Credenciais (usuário/senha) inválidas"""
 
-    def __init__(self, username: Optional[str] = None, message: str = "Usuário ou senha inválidos"):
+    def __init__(self, username: str | None = None, message: str = "Usuário ou senha inválidos"):
         details = {"username": username} if username else {}
         super().__init__(message, "INVALID_CREDENTIALS", details)
 
@@ -92,9 +92,7 @@ class SessionExpiredError(AuthenticationError):
 class AccountLockedError(AuthenticationError):
     """Conta bloqueada por tentativas excessivas de login"""
 
-    def __init__(
-        self, username: str, locked_until: Optional[str] = None, attempts: Optional[int] = None
-    ):
+    def __init__(self, username: str, locked_until: str | None = None, attempts: int | None = None):
         details = {"username": username, "locked_until": locked_until, "attempts": attempts}
         message = "Conta bloqueada temporariamente"
         super().__init__(message, "ACCOUNT_LOCKED", details)
@@ -103,9 +101,7 @@ class AccountLockedError(AuthenticationError):
 class InsufficientPermissionsError(OzempicError):
     """Usuário não tem permissão para realizar a ação"""
 
-    def __init__(
-        self, action: str, required_role: Optional[str] = None, user_role: Optional[str] = None
-    ):
+    def __init__(self, action: str, required_role: str | None = None, user_role: str | None = None):
         details = {"action": action, "required_role": required_role, "user_role": user_role}
         message = f"Permissão insuficiente para: {action}"
         super().__init__(message, "INSUFFICIENT_PERMISSIONS", details)
@@ -123,7 +119,7 @@ class UserError(OzempicError):
         self,
         message: str = "Erro de usuário",
         code: str = "USER_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -175,7 +171,7 @@ class ValidationError(OzempicError):
         self,
         message: str = "Erro de validação",
         code: str = "VALIDATION_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -219,7 +215,7 @@ class DatabaseError(OzempicError):
         self,
         message: str = "Erro de banco de dados",
         code: str = "DATABASE_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -227,7 +223,7 @@ class DatabaseError(OzempicError):
 class DatabaseConnectionError(DatabaseError):
     """Erro de conexão com o banco de dados"""
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: str | None = None):
         details = {"db_path": db_path} if db_path else {}
         message = "Falha na conexão com o banco de dados"
         super().__init__(message, "DB_CONNECTION_ERROR", details)
@@ -245,7 +241,7 @@ class MigrationError(DatabaseError):
 class IntegrityError(DatabaseError):
     """Violação de integridade (constraint, unique, foreign key)"""
 
-    def __init__(self, constraint: str, details: Optional[Dict] = None):
+    def __init__(self, constraint: str, details: dict | None = None):
         message = f"Violação de integridade: {constraint}"
         super().__init__(message, "INTEGRITY_ERROR", details or {"constraint": constraint})
 
@@ -262,7 +258,7 @@ class DrawerError(OzempicError):
         self,
         message: str = "Erro de gaveta",
         code: str = "DRAWER_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -301,7 +297,7 @@ class AuditError(OzempicError):
         self,
         message: str = "Erro de auditoria",
         code: str = "AUDIT_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 
@@ -327,7 +323,7 @@ class ConfigurationError(OzempicError):
         self,
         message: str = "Erro de configuração",
         code: str = "CONFIG_ERROR",
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ):
         super().__init__(message, code, details)
 

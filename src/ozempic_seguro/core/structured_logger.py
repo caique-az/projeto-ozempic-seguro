@@ -2,14 +2,14 @@
 Sistema de logging estruturado para melhor observabilidade.
 Usa formato JSON para facilitar análise e monitoramento.
 """
+
 import json
 import logging
 import sys
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Dict, Optional
 import traceback
+from datetime import UTC, datetime
 from functools import wraps
+from pathlib import Path
 
 
 class StructuredFormatter(logging.Formatter):
@@ -18,7 +18,7 @@ class StructuredFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Formata log record como JSON"""
         log_data = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -133,11 +133,11 @@ class SensitiveDataFilter(logging.Filter):
 class StructuredLogger:
     """Logger estruturado com contexto e filtros de segurança"""
 
-    _loggers: Dict[str, logging.Logger] = {}
+    _loggers: dict[str, logging.Logger] = {}
 
     @classmethod
     def get_logger(
-        cls, name: str, level: int = logging.INFO, log_file: Optional[str] = None
+        cls, name: str, level: int = logging.INFO, log_file: str | None = None
     ) -> logging.Logger:
         """
         Obtém ou cria um logger estruturado.
@@ -194,7 +194,7 @@ class StructuredLogger:
 
 
 def log_execution(
-    logger: Optional[logging.Logger] = None,
+    logger: logging.Logger | None = None,
     level: int = logging.INFO,
     include_args: bool = False,
     include_result: bool = False,
@@ -225,18 +225,24 @@ def log_execution(
             if include_args:
                 # Filtra argumentos sensíveis
                 safe_args = [
-                    arg
-                    if not any(s in str(arg).lower() for s in SensitiveDataFilter.SENSITIVE_FIELDS)
-                    else "***REDACTED***"
+                    (
+                        arg
+                        if not any(
+                            s in str(arg).lower() for s in SensitiveDataFilter.SENSITIVE_FIELDS
+                        )
+                        else "***REDACTED***"
+                    )
                     for arg in args
                 ]
                 safe_kwargs = {
-                    k: v
-                    if not any(
-                        s in k.lower() or s in str(v).lower()
-                        for s in SensitiveDataFilter.SENSITIVE_FIELDS
+                    k: (
+                        v
+                        if not any(
+                            s in k.lower() or s in str(v).lower()
+                            for s in SensitiveDataFilter.SENSITIVE_FIELDS
+                        )
+                        else "***REDACTED***"
                     )
-                    else "***REDACTED***"
                     for k, v in kwargs.items()
                 }
 
@@ -305,7 +311,7 @@ def log_error(message: str, **context):
     StructuredLogger.log_with_context(app_logger, logging.ERROR, message, **context)
 
 
-def log_security_event(action: str, user_id: Optional[int] = None, **details):
+def log_security_event(action: str, user_id: int | None = None, **details):
     """Log específico para eventos de segurança"""
     security_logger = StructuredLogger.get_logger(
         "ozempic_seguro.security", level=logging.INFO, log_file="logs/security.json"

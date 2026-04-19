@@ -1,7 +1,9 @@
 """
 Componentes de diálogos e notificações: ModernConfirmDialog, ToastNotification
 """
+
 import customtkinter
+
 from .buttons import ModernButton
 
 

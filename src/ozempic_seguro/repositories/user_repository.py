@@ -3,14 +3,15 @@ Repositório de usuários: operações CRUD e autenticação.
 
 Implementa IUserRepository com lógica de persistência para usuários.
 """
-import os
-from typing import Optional, List, Dict, Any
-import sqlite3
 
+import os
+import sqlite3
+from typing import Any
+
+from ..core.logger import logger
 from .connection import DatabaseConnection
 from .interfaces import IUserRepository
 from .security import hash_password, verify_password
-from ..core.logger import logger
 
 
 class UserRepository(IUserRepository):
@@ -82,7 +83,7 @@ class UserRepository(IUserRepository):
 
     def create_user(
         self, username: str, password: str, full_name: str, user_type: str
-    ) -> Optional[int]:
+    ) -> int | None:
         """
         Cria um usuário e retorna seu ID.
 
@@ -111,7 +112,7 @@ class UserRepository(IUserRepository):
             self._db.rollback()
             return None
 
-    def authenticate_user(self, username: str, password: str) -> Optional[Dict[str, Any]]:
+    def authenticate_user(self, username: str, password: str) -> dict[str, Any] | None:
         """
         Autentica usuário e retorna dados se bem-sucedido.
 
@@ -168,7 +169,9 @@ class UserRepository(IUserRepository):
             True se atualizado com sucesso
         """
         password_hash = hash_password(new_password)
-        self._db.execute("UPDATE usuarios SET senha_hash = ? WHERE id = ?", (password_hash, user_id))
+        self._db.execute(
+            "UPDATE usuarios SET senha_hash = ? WHERE id = ?", (password_hash, user_id)
+        )
         self._db.commit()
         return self._db.cursor.rowcount > 0
 
@@ -195,7 +198,7 @@ class UserRepository(IUserRepository):
 
         return total <= 1
 
-    def get_users(self) -> List[tuple]:
+    def get_users(self) -> list[tuple]:
         """
         Obtém lista de todos os usuários.
 
@@ -211,7 +214,7 @@ class UserRepository(IUserRepository):
         )
         return self._db.fetchall()
 
-    def get_user_by_id(self, user_id: int) -> Optional[Dict[str, Any]]:
+    def get_user_by_id(self, user_id: int) -> dict[str, Any] | None:
         """
         Obtém um usuário específico pelo ID.
 
@@ -235,7 +238,7 @@ class UserRepository(IUserRepository):
             }
         return None
 
-    def get_user_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+    def get_user_by_username(self, username: str) -> dict[str, Any] | None:
         """
         Obtém um usuário pelo username.
 
@@ -261,11 +264,11 @@ class UserRepository(IUserRepository):
         return None
 
     # Métodos da interface IRepository
-    def find_by_id(self, entity_id: int) -> Optional[Dict[str, Any]]:
+    def find_by_id(self, entity_id: int) -> dict[str, Any] | None:
         """Implementação de IRepository.find_by_id"""
         return self.get_user_by_id(entity_id)
 
-    def find_all(self) -> List[Dict[str, Any]]:
+    def find_all(self) -> list[dict[str, Any]]:
         """Implementação de IRepository.find_all"""
         users = self.get_users()
         return [
@@ -280,7 +283,7 @@ class UserRepository(IUserRepository):
             for u in users
         ]
 
-    def save(self, entity: Dict[str, Any]) -> bool:
+    def save(self, entity: dict[str, Any]) -> bool:
         """Implementação de IRepository.save"""
         if "id" in entity and entity["id"]:
             # Update
@@ -308,11 +311,11 @@ class UserRepository(IUserRepository):
         return self.get_user_by_id(entity_id) is not None
 
     # Métodos da interface IUserRepository
-    def find_by_username(self, username: str) -> Optional[Dict[str, Any]]:
+    def find_by_username(self, username: str) -> dict[str, Any] | None:
         """Implementação de IUserRepository.find_by_username"""
         return self.get_user_by_username(username)
 
-    def find_by_type(self, user_type: str) -> List[Dict[str, Any]]:
+    def find_by_type(self, user_type: str) -> list[dict[str, Any]]:
         """Implementação de IUserRepository.find_by_type"""
         self._db.execute(
             "SELECT id, username, nome_completo, tipo, ativo FROM usuarios WHERE tipo = ?",
@@ -323,7 +326,7 @@ class UserRepository(IUserRepository):
             for r in self._db.fetchall()
         ]
 
-    def find_active_users(self) -> List[Dict[str, Any]]:
+    def find_active_users(self) -> list[dict[str, Any]]:
         """Implementação de IUserRepository.find_active_users"""
         self._db.execute(
             "SELECT id, username, nome_completo, tipo, ativo FROM usuarios WHERE ativo = 1"

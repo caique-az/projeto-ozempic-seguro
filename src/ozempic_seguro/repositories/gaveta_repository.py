@@ -3,12 +3,13 @@ Repositório de gavetas: manipulação de estado e histórico.
 
 Implementa IGavetaRepository com lógica de persistência para gavetas.
 """
-import sqlite3
-from typing import Optional, List, Tuple, Any, Dict
 
+import sqlite3
+from typing import Any
+
+from ..core.logger import logger
 from .connection import DatabaseConnection
 from .interfaces import IGavetaRepository
-from ..core.logger import logger
 
 
 class GavetaRepository(IGavetaRepository):
@@ -41,8 +42,8 @@ class GavetaRepository(IGavetaRepository):
         return bool(result[0]) if result else False
 
     def set_state(
-        self, drawer_number: int, state: bool, user_type: str, usuario_id: Optional[int] = None
-    ) -> Tuple[bool, str]:
+        self, drawer_number: int, state: bool, user_type: str, usuario_id: int | None = None
+    ) -> tuple[bool, str]:
         """
         Define o estado de uma gaveta e registra no histórico.
 
@@ -76,7 +77,7 @@ class GavetaRepository(IGavetaRepository):
 
                 # Determina ação
                 if state and not previous_state:
-                    acao = "aberta"
+                    action = "aberta"
                 elif not state and previous_state:
                     action = "fechada"
                 else:
@@ -109,7 +110,7 @@ class GavetaRepository(IGavetaRepository):
             self._db.rollback()
             return False, f"Erro ao atualizar gaveta: {str(e)}"
 
-    def get_history(self, drawer_number: int, limit: int = 10) -> List[Tuple]:
+    def get_history(self, drawer_number: int, limit: int = 10) -> list[tuple]:
         """
         Retorna o histórico de uma gaveta.
 
@@ -135,7 +136,7 @@ class GavetaRepository(IGavetaRepository):
 
     def get_history_paginated(
         self, drawer_number: int, offset: int = 0, limit: int = 20
-    ) -> List[Tuple]:
+    ) -> list[tuple]:
         """
         Retorna o histórico de uma gaveta com paginação.
 
@@ -180,7 +181,7 @@ class GavetaRepository(IGavetaRepository):
         )
         return self._db.fetchone()[0]
 
-    def get_all_history(self) -> List[Tuple]:
+    def get_all_history(self) -> list[tuple]:
         """
         Retorna todo o histórico de todas as gavetas.
 
@@ -202,7 +203,7 @@ class GavetaRepository(IGavetaRepository):
         )
         return self._db.fetchall()
 
-    def get_all_history_paginated(self, offset: int = 0, limit: int = 20) -> List[Tuple]:
+    def get_all_history_paginated(self, offset: int = 0, limit: int = 20) -> list[tuple]:
         """
         Retorna o histórico de todas as gavetas com paginação.
 
@@ -241,7 +242,7 @@ class GavetaRepository(IGavetaRepository):
         return self._db.fetchone()[0]
 
     # Métodos da interface IRepository
-    def find_by_id(self, entity_id: int) -> Optional[Dict[str, Any]]:
+    def find_by_id(self, entity_id: int) -> dict[str, Any] | None:
         """Implementação de IRepository.find_by_id"""
         self._db.execute(
             "SELECT id, numero_gaveta, esta_aberta FROM gavetas WHERE id = ?", (entity_id,)
@@ -251,7 +252,7 @@ class GavetaRepository(IGavetaRepository):
             return {"id": row[0], "numero_gaveta": row[1], "esta_aberta": bool(row[2])}
         return None
 
-    def find_all(self) -> List[Dict[str, Any]]:
+    def find_all(self) -> list[dict[str, Any]]:
         """Implementação de IRepository.find_all"""
         self._db.execute(
             "SELECT id, numero_gaveta, esta_aberta FROM gavetas ORDER BY numero_gaveta"
@@ -261,7 +262,7 @@ class GavetaRepository(IGavetaRepository):
             for r in self._db.fetchall()
         ]
 
-    def save(self, entity: Dict[str, Any]) -> bool:
+    def save(self, entity: dict[str, Any]) -> bool:
         """Implementação de IRepository.save"""
         if "id" in entity and entity["id"]:
             self._db.execute(
@@ -287,7 +288,7 @@ class GavetaRepository(IGavetaRepository):
         return self.find_by_id(entity_id) is not None
 
     # Métodos da interface IGavetaRepository
-    def find_by_numero(self, numero: int) -> Optional[Dict[str, Any]]:
+    def find_by_numero(self, numero: int) -> dict[str, Any] | None:
         """Implementação de IGavetaRepository.find_by_numero"""
         self._db.execute(
             "SELECT id, numero_gaveta, esta_aberta FROM gavetas WHERE numero_gaveta = ?", (numero,)
@@ -297,7 +298,7 @@ class GavetaRepository(IGavetaRepository):
             return {"id": row[0], "numero_gaveta": row[1], "esta_aberta": bool(row[2])}
         return None
 
-    def find_by_status(self, status: str) -> List[Dict[str, Any]]:
+    def find_by_status(self, status: str) -> list[dict[str, Any]]:
         """Implementação de IGavetaRepository.find_by_status"""
         is_open = status.lower() in ("aberta", "open", "true", "1")
         self._db.execute(
@@ -308,7 +309,7 @@ class GavetaRepository(IGavetaRepository):
             for r in self._db.fetchall()
         ]
 
-    def find_by_user(self, user_id: int) -> List[Dict[str, Any]]:
+    def find_by_user(self, user_id: int) -> list[dict[str, Any]]:
         """Implementação de IGavetaRepository.find_by_user"""
         self._db.execute(
             """

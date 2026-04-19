@@ -1,7 +1,9 @@
-import customtkinter
-from ..components import Header, VoltarButton
-from ...services.timer_control_service import get_timer_control_service
 from tkinter import messagebox
+
+import customtkinter
+
+from ...services.timer_control_service import get_timer_control_service
+from ..components import Header, VoltarButton
 
 
 class ParametroSistemasFrame(customtkinter.CTkFrame):
@@ -86,7 +88,9 @@ class ParametroSistemasFrame(customtkinter.CTkFrame):
 
         if success:
             state_text = "ativado" if new_state else "desativado"
-            messagebox.showinfo("Sucesso", f"Timer de abertura de gavetas {state_text} com sucesso!")
+            messagebox.showinfo(
+                "Sucesso", f"Timer de abertura de gavetas {state_text} com sucesso!"
+            )
 
             # Se estiver ativando e houver um bloqueio ativo, mostra o tempo restante
             if new_state and self.timer_service.is_blocked():

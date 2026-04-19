@@ -1,19 +1,17 @@
 from ..base_frame import BaseFrameView
 from ..components import ResponsiveButtonGrid
-from .gerenciamento_usuarios_view import GerenciamentoUsuariosFrame
-from .cadastro_usuario_view import CadastroUsuarioFrame
-from .diagnostico_view import DiagnosticoFrame
-from .historico_view import HistoricoView
 from .admin_gavetas_view import AdminGavetasFrame
 from .auditoria_view import AuditoriaFrame
+from .cadastro_usuario_view import CadastroUsuarioFrame
+from .diagnostico_view import DiagnosticoFrame
+from .gerenciamento_usuarios_view import GerenciamentoUsuariosFrame
+from .historico_view import HistoricoView
 
 
 class PainelAdministradorFrame(BaseFrameView):
     """Painel do administrador - herda de BaseFrameView"""
 
-    def __init__(
-        self, master, end_session_callback=None, logged_in_user=None, *args, **kwargs
-    ):
+    def __init__(self, master, end_session_callback=None, logged_in_user=None, *args, **kwargs):
         self.logged_in_user = logged_in_user
         super().__init__(master, end_session_callback, *args, **kwargs)
         self.create_main_screen()
@@ -69,9 +67,7 @@ class PainelAdministradorFrame(BaseFrameView):
         self._transition_screen(create)
 
     def register_user(self):
-        self._transition_screen(
-            lambda: CadastroUsuarioFrame(self, back_callback=self.back_to_main)
-        )
+        self._transition_screen(lambda: CadastroUsuarioFrame(self, back_callback=self.back_to_main))
 
     def diagnostics(self):
         self._transition_screen(lambda: DiagnosticoFrame(self, back_callback=self.back_to_main))

@@ -2,6 +2,7 @@
 Módulo de segurança: funções de hash e verificação de senha com bcrypt.
 Sistema 100% bcrypt - sem suporte legacy.
 """
+
 import bcrypt
 
 

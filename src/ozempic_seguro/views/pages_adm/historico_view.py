@@ -1,7 +1,8 @@
 import customtkinter
-from ..components import Header, VoltarButton
-from ...services.gaveta_service import GavetaService
+
 from ...core.logger import logger
+from ...services.gaveta_service import GavetaService
+from ..components import Header, VoltarButton
 
 
 class HistoricoView(customtkinter.CTkFrame):
@@ -84,7 +85,7 @@ class HistoricoView(customtkinter.CTkFrame):
         headers = ["Data/Hora", "Gaveta", "Ação", "Usuário"]
         widths = [0.3, 0.2, 0.25, 0.25]  # Proporções de largura
 
-        for i, (text, width) in enumerate(zip(headers, widths)):
+        for i, (text, width) in enumerate(zip(headers, widths, strict=False)):
             # Cria um frame para cada cabeçalho para melhor controle
             header_cell = customtkinter.CTkFrame(header_frame, fg_color="transparent")
             header_cell.pack(side="left", fill="x", expand=True)

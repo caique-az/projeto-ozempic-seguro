@@ -1,9 +1,11 @@
 """
 Componentes comuns: Header, ImageCache, MainButton
 """
+
+import os
+
 import customtkinter
 from PIL import Image
-import os
 
 
 class ImageCache:

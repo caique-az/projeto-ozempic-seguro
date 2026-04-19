@@ -3,7 +3,9 @@ Módulo principal da aplicação Ozempic Seguro.
 
 Inicializa a interface gráfica e configura os componentes do sistema.
 """
+
 import customtkinter
+
 from .controllers.navigation_controller import NavigationController
 from .core.logger import logger
 
@@ -24,8 +26,8 @@ def _preload_images() -> None:
 
 def _setup_audit_callback() -> None:
     """Configura callback de auditoria para SessionManager (evita import circular)"""
-    from .session.session_manager import SessionManager
     from .services.audit_service import AuditService
+    from .session.session_manager import SessionManager
 
     audit_service = AuditService()
 
@@ -40,7 +42,7 @@ def _setup_audit_callback() -> None:
 class MainApp(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        from .config import UIConfig, AppConfig
+        from .config import AppConfig, UIConfig
 
         # Hide window during initialization
         self.withdraw()

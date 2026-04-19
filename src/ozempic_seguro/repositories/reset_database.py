@@ -4,6 +4,7 @@ Script para resetar o banco de dados.
 ATENÇÃO: Este script remove TODOS os dados existentes!
 Use apenas em ambiente de desenvolvimento ou para recuperação.
 """
+
 import os
 import sqlite3
 

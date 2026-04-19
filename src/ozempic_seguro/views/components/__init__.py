@@ -12,12 +12,12 @@ Este pacote organiza os componentes em módulos separados por funcionalidade:
 """
 
 # Importações para manter compatibilidade com código existente
+from .buttons import FinalizarSessaoButton, ModernButton, VoltarButton
 from .common import Header, ImageCache, MainButton
-from .buttons import ModernButton, VoltarButton, FinalizarSessaoButton
 from .dialogs import ModernConfirmDialog, ToastNotification
-from .layouts import ResponsiveFrame, ResponsiveButtonGrid
 from .gavetas import GavetaButton, GavetaButtonGrid
 from .keyboard import TecladoVirtual
+from .layouts import ResponsiveButtonGrid, ResponsiveFrame
 from .loading import LoadingOverlay, SplashScreen, TransitionOverlay
 
 __all__ = [

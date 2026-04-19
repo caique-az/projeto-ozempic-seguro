@@ -1,8 +1,10 @@
-import customtkinter
-from tkinter import ttk
 from datetime import datetime, timedelta
-from ...services.audit_view_service import get_audit_view_service, AuditFilter
+from tkinter import ttk
+
+import customtkinter
+
 from ...core.logger import logger
+from ...services.audit_view_service import AuditFilter, get_audit_view_service
 
 
 class AuditoriaFrame(customtkinter.CTkFrame):

@@ -7,12 +7,12 @@ Responsabilidades:
 - Paginar resultados
 - Formatar dados para exibição
 """
-from typing import Optional, List
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from .audit_service import AuditService
 from ..core.logger import logger
+from .audit_service import AuditService
 
 
 @dataclass
@@ -24,10 +24,10 @@ class AuditLogItem:
     usuario: str
     action: str
     tabela: str
-    id_afetado: Optional[int]
-    dados_anteriores: Optional[str]
-    dados_novos: Optional[str]
-    ip: Optional[str]
+    id_afetado: int | None
+    dados_anteriores: str | None
+    dados_novos: str | None
+    ip: str | None
 
     @property
     def timestamp_display(self) -> str:
@@ -49,11 +49,11 @@ class AuditLogItem:
 class AuditFilter:
     """Filtros para busca de auditoria"""
 
-    action: Optional[str] = None
-    start_date: Optional[str] = None
-    end_date: Optional[str] = None
-    user: Optional[str] = None
-    table: Optional[str] = None
+    action: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+    user: str | None = None
+    table: str | None = None
 
     @classmethod
     def default_last_7_days(cls) -> "AuditFilter":
@@ -69,7 +69,7 @@ class AuditFilter:
 class PaginatedAuditResult:
     """Resultado paginado de auditoria"""
 
-    items: List[AuditLogItem]
+    items: list[AuditLogItem]
     total: int
     page: int
     per_page: int
@@ -106,7 +106,7 @@ class AuditViewService:
         self._audit_service = AuditService()
 
     def get_logs(
-        self, filter: Optional[AuditFilter] = None, page: int = 1, per_page: int = DEFAULT_PAGE_SIZE
+        self, filter: AuditFilter | None = None, page: int = 1, per_page: int = DEFAULT_PAGE_SIZE
     ) -> PaginatedAuditResult:
         """
         Obtém logs de auditoria com filtros e paginação.
@@ -172,7 +172,7 @@ class AuditViewService:
             logger.error(f"Error getting audit logs: {e}")
             return PaginatedAuditResult(items=[], total=0, page=page, per_page=per_page)
 
-    def get_available_actions(self) -> List[str]:
+    def get_available_actions(self) -> list[str]:
         """Retorna lista de ações disponíveis para filtro"""
         return self.AVAILABLE_ACTIONS.copy()
 

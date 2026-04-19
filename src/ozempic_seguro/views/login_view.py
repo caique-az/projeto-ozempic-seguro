@@ -1,13 +1,15 @@
-import customtkinter
 import tkinter as tk
 from tkinter import messagebox
-from .pages_adm.painel_administrador_view import PainelAdministradorFrame
-from .components import Header, VoltarButton, ModernButton
-from ..services.auth_service import get_auth_service, UserPanel
+
+import customtkinter
+
 from ..config import UIConfig
+from ..services.auth_service import UserPanel, get_auth_service
+from .components import Header, ModernButton, VoltarButton
+from .pages_adm.painel_administrador_view import PainelAdministradorFrame
 from .repositor_view import RepositorFrame
-from .vendedor_view import VendedorFrame
 from .tecnico_view import TecnicoFrame
+from .vendedor_view import VendedorFrame
 
 
 class LoginFrame(customtkinter.CTkFrame):
@@ -37,9 +39,7 @@ class LoginFrame(customtkinter.CTkFrame):
             frame_login, width=UIConfig.LOGIN_ENTRY_WIDTH, height=UIConfig.LOGIN_ENTRY_HEIGHT
         )
         self.username_entry.pack(pady=UIConfig.LOGIN_ENTRY_PADY)
-        self.username_entry.bind(
-            "<Button-1>", lambda e: self.set_active_field(self.username_entry)
-        )
+        self.username_entry.bind("<Button-1>", lambda e: self.set_active_field(self.username_entry))
 
         # Campo de senha
         customtkinter.CTkLabel(

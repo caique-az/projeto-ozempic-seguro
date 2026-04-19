@@ -3,45 +3,46 @@ Módulo core - Componentes fundamentais do sistema.
 
 Fornece utilitários, validadores, cache, logging e exceções customizadas.
 """
-from .validators import Validators, ValidationResult
+
 from .cache import MemoryCache, cached
-from .logger import logger
 from .exceptions import (
-    # Base
-    OzempicError,
+    AccountLockedError,
+    # Audit
+    AuditError,
+    AuditLogError,
     # Authentication
     AuthenticationError,
-    InvalidCredentialsError,
-    SessionExpiredError,
-    AccountLockedError,
-    InsufficientPermissionsError,
-    # User
-    UserError,
-    UserNotFoundError,
-    UserAlreadyExistsError,
-    LastAdminError,
-    InvalidUserDataError,
-    # Validation
-    ValidationError,
-    InvalidUsernameError,
-    WeakPasswordError,
-    InvalidInputError,
+    # Configuration
+    ConfigurationError,
     # Database
     DatabaseError,
-    MigrationError,
-    IntegrityError,
     # Drawer
     DrawerError,
     DrawerNotFoundError,
     DrawerStateError,
-    # Audit
-    AuditError,
-    AuditLogError,
-    # Configuration
-    ConfigurationError,
-    MissingConfigError,
+    InsufficientPermissionsError,
+    IntegrityError,
     InvalidConfigError,
+    InvalidCredentialsError,
+    InvalidInputError,
+    InvalidUserDataError,
+    InvalidUsernameError,
+    LastAdminError,
+    MigrationError,
+    MissingConfigError,
+    # Base
+    OzempicError,
+    SessionExpiredError,
+    UserAlreadyExistsError,
+    # User
+    UserError,
+    UserNotFoundError,
+    # Validation
+    ValidationError,
+    WeakPasswordError,
 )
+from .logger import logger
+from .validators import ValidationResult, Validators
 
 __all__ = [
     # Validators

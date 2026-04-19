@@ -13,25 +13,25 @@ ou:
 
 # Re-exportar todos os componentes do novo pacote
 from .components import (
+    FinalizarSessaoButton,
+    # Gavetas
+    GavetaButton,
+    GavetaButtonGrid,
     # Common
     Header,
     ImageCache,
     MainButton,
     # Buttons
     ModernButton,
-    VoltarButton,
-    FinalizarSessaoButton,
     # Dialogs
     ModernConfirmDialog,
-    ToastNotification,
+    ResponsiveButtonGrid,
     # Layouts
     ResponsiveFrame,
-    ResponsiveButtonGrid,
-    # Gavetas
-    GavetaButton,
-    GavetaButtonGrid,
     # Keyboard
     TecladoVirtual,
+    ToastNotification,
+    VoltarButton,
 )
 
 __all__ = [

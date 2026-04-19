@@ -1,6 +1,7 @@
 """
 Virtual keyboard component: TecladoVirtual
 """
+
 import customtkinter
 
 

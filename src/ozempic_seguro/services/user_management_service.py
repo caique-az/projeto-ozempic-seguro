@@ -7,16 +7,16 @@ Responsabilidades:
 - Excluir usuário
 - Verificar permissões
 """
-from typing import Optional, List, Tuple
+
 from dataclasses import dataclass, field
 
-from .user_service import UserService
-from ..core.logger import logger
 from ..core.exceptions import (
-    UserNotFoundError,
     LastAdminError,
+    UserNotFoundError,
     WeakPasswordError,
 )
+from ..core.logger import logger
+from .user_service import UserService
 
 
 @dataclass
@@ -65,11 +65,7 @@ class UserData:
         """Retorna data formatada para exibição"""
         try:
             if self.created_at and isinstance(self.created_at, str):
-                return (
-                    self.created_at.split(" ")[0]
-                    if " " in self.created_at
-                    else self.created_at
-                )
+                return self.created_at.split(" ")[0] if " " in self.created_at else self.created_at
             return "N/A"
         except (ValueError, AttributeError, IndexError):
             return "N/A"
@@ -81,7 +77,7 @@ class OperationResult:
 
     success: bool
     message: str = ""
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
 
 
 class UserManagementService:
@@ -94,7 +90,7 @@ class UserManagementService:
     def __init__(self):
         self._user_service = UserService()
 
-    def get_all_users(self) -> List[UserData]:
+    def get_all_users(self) -> list[UserData]:
         """
         Obtém todos os usuários.
 
@@ -118,7 +114,7 @@ class UserManagementService:
             logger.error(f"Error getting users: {e}")
             return []
 
-    def get_user_by_id(self, user_id: int) -> Optional[UserData]:
+    def get_user_by_id(self, user_id: int) -> UserData | None:
         """
         Obtém usuário por ID.
 
@@ -193,7 +189,7 @@ class UserManagementService:
                 success=False, message=f"Erro ao alterar senha: {str(e)}", errors=[str(e)]
             )
 
-    def delete_user(self, user_id: int, current_user_id: Optional[int] = None) -> OperationResult:
+    def delete_user(self, user_id: int, current_user_id: int | None = None) -> OperationResult:
         """
         Exclui um usuário.
 
@@ -256,7 +252,7 @@ class UserManagementService:
                 success=False, message=f"Erro ao excluir usuário: {str(e)}", errors=[str(e)]
             )
 
-    def can_modify_user(self, user_id: int) -> Tuple[bool, str]:
+    def can_modify_user(self, user_id: int) -> tuple[bool, str]:
         """
         Verifica se um usuário pode ser modificado.
 
@@ -276,9 +272,7 @@ class UserManagementService:
 
         return True, ""
 
-    def can_delete_user(
-        self, user_id: int, current_user_id: Optional[int] = None
-    ) -> Tuple[bool, str]:
+    def can_delete_user(self, user_id: int, current_user_id: int | None = None) -> tuple[bool, str]:
         """
         Verifica se um usuário pode ser excluído.
 

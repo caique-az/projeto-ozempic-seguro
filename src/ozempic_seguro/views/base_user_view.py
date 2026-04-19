@@ -3,13 +3,16 @@ Base view for operational users (vendedor/repositor).
 
 Extracts common code to reduce duplication.
 """
-import customtkinter
+
 from tkinter import messagebox
+
+import customtkinter
+
 from .components import (
-    Header,
     FinalizarSessaoButton,
-    GavetaButtonGrid,
     GavetaButton,
+    GavetaButtonGrid,
+    Header,
     ModernConfirmDialog,
     ToastNotification,
 )

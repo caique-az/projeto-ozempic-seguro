@@ -2,11 +2,13 @@
 Sistema de cache em memória para otimização de performance.
 Implementa cache LRU (Least Recently Used) com TTL (Time To Live).
 """
-from typing import Any, Optional, Dict, Callable
-from functools import wraps
-from datetime import datetime
-import threading
+
 import hashlib
+import threading
+from collections.abc import Callable
+from datetime import datetime
+from functools import wraps
+from typing import Any
 
 
 class CacheEntry:
@@ -45,14 +47,14 @@ class MemoryCache:
             max_size: Tamanho máximo do cache
             default_ttl: TTL padrão em segundos (5 minutos)
         """
-        self._cache: Dict[str, CacheEntry] = {}
+        self._cache: dict[str, CacheEntry] = {}
         self._max_size = max_size
         self._default_ttl = default_ttl
         self._lock = threading.RLock()
         self._hits = 0
         self._misses = 0
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """
         Obtém valor do cache.
 
@@ -78,7 +80,7 @@ class MemoryCache:
             self._misses += 1
             return None
 
-    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+    def set(self, key: str, value: Any, ttl: int | None = None) -> None:
         """
         Define valor no cache.
 
@@ -131,7 +133,7 @@ class MemoryCache:
 
         del self._cache[lru_key]
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Retorna estatísticas do cache"""
         with self._lock:
             total_requests = self._hits + self._misses
@@ -227,7 +229,7 @@ def _clear_function_cache(func: Callable, prefix: str) -> None:
         _global_cache.delete(key)
 
 
-def invalidate_cache(pattern: Optional[str] = None) -> int:
+def invalidate_cache(pattern: str | None = None) -> int:
     """
     Invalida entradas do cache que correspondem ao padrão.
 
@@ -252,7 +254,7 @@ def invalidate_cache(pattern: Optional[str] = None) -> int:
     return count
 
 
-def get_cache_stats() -> Dict[str, Any]:
+def get_cache_stats() -> dict[str, Any]:
     """Obtém estatísticas do cache global"""
     return _global_cache.get_stats()
 

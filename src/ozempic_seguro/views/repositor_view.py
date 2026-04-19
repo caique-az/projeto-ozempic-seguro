@@ -1,6 +1,7 @@
 """
 Repositor view - allows opening and closing drawers.
 """
+
 from .base_user_view import BaseUserFrame
 from .components import GavetaButton
 

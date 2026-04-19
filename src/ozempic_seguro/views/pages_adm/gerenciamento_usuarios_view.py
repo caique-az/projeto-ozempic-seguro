@@ -1,8 +1,10 @@
 import tkinter
+
 import customtkinter
-from ..components import Header, VoltarButton, ModernButton, ModernConfirmDialog, ToastNotification
-from ...services.user_management_service import get_user_management_service
+
 from ...core.logger import logger
+from ...services.user_management_service import get_user_management_service
+from ..components import Header, ModernButton, ModernConfirmDialog, ToastNotification, VoltarButton
 
 
 class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
@@ -10,11 +12,11 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
 
     def __init__(self, master, back_callback=None, logged_in_user=None, *args, **kwargs):
         self.back_callback = back_callback
-        self.logged_in_user = logged_in_user  
+        self.logged_in_user = logged_in_user
         super().__init__(master, fg_color=self.BG_COLOR, *args, **kwargs)
         self.management_service = get_user_management_service()
-        self.selected_user = None  
-        self.selected_user_data = None  
+        self.selected_user = None
+        self.selected_user_data = None
 
         # Create overlay to hide construction
         self._overlay = customtkinter.CTkFrame(master, fg_color=self.BG_COLOR)
@@ -71,9 +73,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
         self.create_table_headers()
 
         # Frame for scrollable content
-        self.scrollable_frame = customtkinter.CTkScrollableFrame(
-            self.table_frame, fg_color="white"
-        )
+        self.scrollable_frame = customtkinter.CTkScrollableFrame(self.table_frame, fg_color="white")
         self.scrollable_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
         self.scrollable_frame.columnconfigure(0, weight=1)
 
@@ -153,7 +153,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
                 dados = [user.username, user.full_name, user.user_type_display]
 
                 # Add data as labels inside frame
-                for col, text in enumerate(data):
+                for col, text in enumerate(dados):
                     # Frame for each cell filling available space
                     cell_frame = customtkinter.CTkFrame(content_frame, fg_color="transparent")
                     cell_frame.grid(row=0, column=col, sticky="nsew", padx=5)
@@ -188,7 +188,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
                 def propagate_click(widget, handler):
                     widget.bind("<Button-1>", handler)
                     for child in widget.winfo_children():
-                        if isinstance(child, (customtkinter.CTkFrame, customtkinter.CTkLabel)):
+                        if isinstance(child, customtkinter.CTkFrame | customtkinter.CTkLabel):
                             propagate_click(child, handler)
 
                 # Apply click propagation for internal elements
@@ -238,7 +238,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
 
     def display_user_details(self, user_id, username, full_name, user_type, active, created_at):
         self.selected_user = user_id
-        self.selected_user_type = user_type  
+        self.selected_user_type = user_type
 
         # Clear details frame
         for widget in self.details_frame.winfo_children():
@@ -287,7 +287,9 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
             lbl_value.pack(side="left")
 
         # Configure buttons frame
-        self.buttons_frame.grid(row=2, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="nsew")
+        self.buttons_frame.grid(
+            row=2, column=0, columnspan=2, padx=20, pady=(20, 10), sticky="nsew"
+        )
 
         # Clear existing buttons
         for widget in self.buttons_frame.winfo_children():
@@ -304,9 +306,11 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
         btn_alterar_senha = ModernButton(
             self.buttons_frame,
             text="🔑 Alterar Senha",
-            command=self.open_change_password_window
-            if not is_technician
-            else self.show_technician_warning,
+            command=(
+                self.open_change_password_window
+                if not is_technician
+                else self.show_technician_warning
+            ),
             style="success" if not is_technician else "secondary",
             height=50,
         )
@@ -440,7 +444,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
         # Numeric keyboard
         buttons = [["1", "2", "3"], ["4", "5", "6"], ["7", "8", "9"], ["", "0", "⌫"]]
 
-        for i, button_row in enumerate(buttons):
+        for _, button_row in enumerate(buttons):
             row_frame = customtkinter.CTkFrame(keyboard_frame, fg_color="transparent")
             row_frame.pack(fill="x", pady=2)
 
@@ -630,9 +634,7 @@ class GerenciamentoUsuariosFrame(customtkinter.CTkFrame):
         success_window.geometry(f"{window_width}x{window_height}+{pos_x}+{pos_y}")
 
         # Frame principal
-        main_frame = customtkinter.CTkFrame(
-            success_window, fg_color="#dff0d8", corner_radius=10
-        )
+        main_frame = customtkinter.CTkFrame(success_window, fg_color="#dff0d8", corner_radius=10)
         main_frame.pack(padx=20, pady=20, fill="both", expand=True)
 
         # Success icon

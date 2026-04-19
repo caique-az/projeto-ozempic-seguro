@@ -9,6 +9,7 @@ DatabaseManager - Compatibility wrapper (DEPRECATED).
     - AuditRepository for audit operations
     - GavetaRepository for drawer operations
 """
+
 import warnings
 
 
