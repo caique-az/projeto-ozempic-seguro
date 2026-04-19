@@ -1,5 +1,5 @@
 """
-Testes para AuthService - Serviço de autenticação.
+Tests for AuthService - Authentication service.
 """
 import pytest
 
@@ -9,15 +9,16 @@ from ozempic_seguro.services.auth_service import (
     UserPanel,
     get_auth_service,
 )
+from ozempic_seguro.services.service_factory import ServiceFactory
 from ozempic_seguro.session.session_manager import SessionManager
 
 
 class TestAuthService:
-    """Testes para AuthService"""
+    """Tests for AuthService"""
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup para cada teste"""
+        """Setup for each test"""
         self.service = AuthService()
         self.session = SessionManager.get_instance()
         self.session.cleanup()
@@ -25,7 +26,7 @@ class TestAuthService:
         self.session.cleanup()
 
     def test_login_invalid_credentials(self):
-        """Testa login com credenciais inválidas"""
+        """Tests login with invalid credentials"""
         result = self.service.login("nonexistent_user", "wrongpass")
 
         assert isinstance(result, LoginResult)
@@ -33,14 +34,13 @@ class TestAuthService:
         assert result.error_message is not None
 
     def test_login_result_has_remaining_attempts(self):
-        """Testa que resultado tem tentativas restantes"""
+        """Tests that result has remaining attempts"""
         result = self.service.login("test_user_attempts", "wrongpass")
 
         assert isinstance(result.remaining_attempts, int)
 
     def test_logout(self):
-        """Testa logout"""
-        # Simular login
+        """Tests logout"""
         self.session.set_current_user({"id": 1, "username": "test", "tipo": "vendedor"})
 
         self.service.logout()
@@ -48,20 +48,20 @@ class TestAuthService:
         assert self.service.is_logged_in() is False
 
     def test_get_login_status(self):
-        """Testa obtenção de status de login"""
+        """Tests getting login status"""
         status = self.service.get_login_status("test_user")
 
         assert isinstance(status, dict)
         assert "message" in status
 
     def test_is_user_locked_false(self):
-        """Testa verificação de bloqueio - não bloqueado"""
+        """Tests lock check - not locked"""
         result = self.service.is_user_locked("new_user_not_locked")
 
         assert result is False
 
     def test_get_current_user_none(self):
-        """Testa obtenção de usuário atual quando não logado"""
+        """Tests getting current user when not logged in"""
         self.session.logout()
 
         result = self.service.get_current_user()
@@ -69,7 +69,7 @@ class TestAuthService:
         assert result is None
 
     def test_get_current_user_logged_in(self):
-        """Testa obtenção de usuário atual quando logado"""
+        """Tests getting current user when logged in"""
         user = {"id": 1, "username": "test", "tipo": "vendedor"}
         self.session.set_current_user(user)
 
@@ -78,19 +78,19 @@ class TestAuthService:
         assert result == user
 
     def test_is_logged_in_false(self):
-        """Testa verificação de login - não logado"""
+        """Tests login check - not logged in"""
         self.session.logout()
 
         assert self.service.is_logged_in() is False
 
     def test_is_logged_in_true(self):
-        """Testa verificação de login - logado"""
+        """Tests login check - logged in"""
         self.session.set_current_user({"id": 1, "username": "test", "tipo": "vendedor"})
 
         assert self.service.is_logged_in() is True
 
     def test_get_lockout_remaining_seconds(self):
-        """Testa obtenção de segundos restantes de bloqueio"""
+        """Tests getting remaining lockout seconds"""
         result = self.service.get_lockout_remaining_seconds("test_user")
 
         assert isinstance(result, int)
@@ -98,30 +98,41 @@ class TestAuthService:
 
 
 class TestUserPanel:
-    """Testes para enum UserPanel"""
+    """Tests for UserPanel enum"""
 
     def test_admin_panel(self):
-        """Testa painel admin"""
+        """Tests admin panel"""
         assert UserPanel.ADMIN.value == "administrador"
 
     def test_vendedor_panel(self):
-        """Testa painel vendedor"""
+        """Tests vendedor panel"""
         assert UserPanel.VENDEDOR.value == "vendedor"
 
     def test_repositor_panel(self):
-        """Testa painel repositor"""
+        """Tests repositor panel"""
         assert UserPanel.REPOSITOR.value == "repositor"
 
     def test_tecnico_panel(self):
-        """Testa painel técnico"""
+        """Tests tecnico panel"""
         assert UserPanel.TECNICO.value == "tecnico"
+
+    def test_user_panel_exists(self):
+        """Tests that UserPanel exists and is an enum"""
+        from enum import Enum
+
+        assert issubclass(UserPanel, Enum)
+
+    def test_user_panel_has_members(self):
+        """Tests that UserPanel has members"""
+        members = list(UserPanel)
+        assert len(members) > 0
 
 
 class TestLoginResult:
-    """Testes para LoginResult"""
+    """Tests for LoginResult"""
 
     def test_login_result_success(self):
-        """Testa criação de resultado de sucesso"""
+        """Tests creating a success result"""
         result = LoginResult(
             success=True, user={"id": 1, "username": "test"}, panel=UserPanel.VENDEDOR
         )
@@ -131,7 +142,7 @@ class TestLoginResult:
         assert result.panel == UserPanel.VENDEDOR
 
     def test_login_result_failure(self):
-        """Testa criação de resultado de falha"""
+        """Tests creating a failure result"""
         result = LoginResult(
             success=False, error_message="Credenciais inválidas", remaining_attempts=2
         )
@@ -141,20 +152,30 @@ class TestLoginResult:
         assert result.remaining_attempts == 2
 
     def test_login_result_locked(self):
-        """Testa criação de resultado de conta bloqueada"""
+        """Tests creating a locked account result"""
         result = LoginResult(success=False, is_locked=True, lockout_seconds=300)
 
         assert result.success is False
         assert result.is_locked is True
         assert result.lockout_seconds == 300
 
+    def test_login_result_with_attempts(self):
+        """Tests LoginResult with remaining attempts"""
+        result = LoginResult(success=False, remaining_attempts=2)
+        assert result.remaining_attempts == 2
+
+    def test_login_result_with_lockout(self):
+        """Tests LoginResult with lockout"""
+        result = LoginResult(success=False, lockout_seconds=300)
+        assert result.lockout_seconds == 300
+
 
 class TestAuthServiceEdgeCases:
-    """Testes para casos extremos do AuthService"""
+    """Tests for AuthService edge cases"""
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup para cada teste"""
+        """Setup for each test"""
         self.service = AuthService()
         self.session = SessionManager.get_instance()
         self.session.cleanup()
@@ -162,21 +183,21 @@ class TestAuthServiceEdgeCases:
         self.session.cleanup()
 
     def test_login_with_empty_username(self):
-        """Testa login com username vazio"""
+        """Tests login with empty username"""
         result = self.service.login("", "password")
 
         assert isinstance(result, LoginResult)
         assert result.success is False
 
     def test_login_with_whitespace_username(self):
-        """Testa login com username apenas espaços"""
+        """Tests login with whitespace-only username"""
         result = self.service.login("   ", "password")
 
         assert isinstance(result, LoginResult)
         assert result.success is False
 
     def test_multiple_failed_logins(self):
-        """Testa múltiplas tentativas de login falhadas"""
+        """Tests multiple failed login attempts"""
         username = "test_multiple_fails"
 
         result1 = self.service.login(username, "wrong1")
@@ -189,19 +210,17 @@ class TestAuthServiceEdgeCases:
         assert result3.success is False
 
     def test_logout_multiple_times(self):
-        """Testa logout múltiplo"""
-        # Simular login
+        """Tests multiple logouts"""
         self.session.set_current_user({"id": 1, "username": "test"})
 
         self.service.logout()
         assert self.service.is_logged_in() is False
 
-        # Segundo logout não deve causar erro
         self.service.logout()
         assert self.service.is_logged_in() is False
 
     def test_get_current_user_after_logout(self):
-        """Testa obter usuário após logout"""
+        """Tests getting user after logout"""
         self.session.set_current_user({"id": 1, "username": "test"})
         assert self.service.get_current_user() is not None
 
@@ -210,71 +229,36 @@ class TestAuthServiceEdgeCases:
 
 
 class TestGetAuthService:
-    """Testes para função get_auth_service"""
+    """Tests for get_auth_service function"""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup for each test"""
+        yield
+        ServiceFactory.reset_all_services()
 
     def test_returns_auth_service(self):
-        """Testa que retorna AuthService"""
+        """Tests that it returns AuthService"""
         service = get_auth_service()
 
         assert isinstance(service, AuthService)
 
     def test_singleton_pattern(self):
-        """Testa padrão singleton"""
+        """Tests singleton pattern"""
         service1 = get_auth_service()
         service2 = get_auth_service()
 
         assert isinstance(service1, AuthService)
         assert isinstance(service2, AuthService)
-
-
-class TestLoginResult:
-    """Testes para LoginResult"""
-
-    def test_login_result_success(self):
-        """Testa LoginResult de sucesso"""
-        result = LoginResult(success=True, user={"id": 1}, panel=UserPanel.VENDEDOR)
-        assert result.success is True
-        assert result.user is not None
-        assert result.panel == UserPanel.VENDEDOR
-
-    def test_login_result_failure(self):
-        """Testa LoginResult de falha"""
-        result = LoginResult(success=False, error_message="Invalid credentials")
-        assert result.success is False
-        assert result.error_message == "Invalid credentials"
-
-    def test_login_result_with_attempts(self):
-        """Testa LoginResult com tentativas restantes"""
-        result = LoginResult(success=False, remaining_attempts=2)
-        assert result.remaining_attempts == 2
-
-    def test_login_result_with_lockout(self):
-        """Testa LoginResult com lockout"""
-        result = LoginResult(success=False, lockout_seconds=300)
-        assert result.lockout_seconds == 300
-
-
-class TestUserPanel:
-    """Testes para UserPanel enum"""
-
-    def test_user_panel_exists(self):
-        """Testa que UserPanel existe e é enum"""
-        from enum import Enum
-
-        assert issubclass(UserPanel, Enum)
-
-    def test_user_panel_has_members(self):
-        """Testa que UserPanel tem membros"""
-        members = list(UserPanel)
-        assert len(members) > 0
+        assert service1 is service2
 
 
 class TestAuthServicePermissions:
-    """Testes de permissões do AuthService"""
+    """Tests for AuthService permissions"""
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup para cada teste"""
+        """Setup for each test"""
         self.service = AuthService()
         self.session = SessionManager.get_instance()
         self.session.cleanup()
@@ -282,19 +266,15 @@ class TestAuthServicePermissions:
         self.session.cleanup()
 
     def test_login_attempt_tracking(self):
-        """Testa rastreamento de tentativas de login"""
+        """Tests login attempt tracking"""
         username = "track_attempts_user"
 
-        # Primeira tentativa
         result1 = self.service.login(username, "wrong1")
-        # Segunda tentativa
         result2 = self.service.login(username, "wrong2")
 
-        # Tentativas devem estar sendo rastreadas
         assert result2.remaining_attempts <= result1.remaining_attempts
 
     def test_reset_login_attempts(self):
-        """Testa reset de tentativas após login bem-sucedido"""
-        # Este teste é conceitual - verifica que o método existe
+        """Tests login attempt reset after successful login"""
         assert hasattr(self.service, "login")
         assert hasattr(self.service, "logout")
