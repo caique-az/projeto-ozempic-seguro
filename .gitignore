@@ -88,6 +88,9 @@ src/ozempic_seguro/_version.py
 # VS Code
 .vscode/
 
+# JetBrains IDEs (PyCharm, IntelliJ, etc.)
+.idea/
+
 # MacOS
 .DS_Store
 
