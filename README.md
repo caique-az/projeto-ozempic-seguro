@@ -12,7 +12,7 @@ pip install -e ".[dev]"
 cp .env.example .env && python run.py
 ```
 
-**Login**: Admin `00`/`admin@2025` | Técnico `01`/`tecnico@2025`
+**Login**: credenciais definidas em `.env` (ver `OZEMPIC_ADMIN_PASSWORD` e `OZEMPIC_TECNICO_PASSWORD`)
 
 ## Stack
 

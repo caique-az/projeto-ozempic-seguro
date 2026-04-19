@@ -109,25 +109,29 @@ def reset_database():
         )
 
         # Cria usuário administrador padrão com bcrypt
-        senha_hash = hash_password("1234")
+        admin_username = os.getenv("OZEMPIC_ADMIN_USERNAME", "00")
+        admin_password = os.getenv("OZEMPIC_ADMIN_PASSWORD", "admin@2025")
+        senha_hash = hash_password(admin_password)
         cursor.execute(
             "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo) VALUES (?, ?, ?, ?)",
-            ("00", senha_hash, "ADMINISTRADOR", "administrador"),
+            (admin_username, senha_hash, "ADMINISTRADOR", "administrador"),
         )
 
         # Cria usuário técnico padrão
-        senha_hash_tecnico = hash_password("1234")
+        tecnico_username = os.getenv("OZEMPIC_TECNICO_USERNAME", "01")
+        tecnico_password = os.getenv("OZEMPIC_TECNICO_PASSWORD", "tecnico@2025")
+        senha_hash_tecnico = hash_password(tecnico_password)
         cursor.execute(
             "INSERT INTO usuarios (username, senha_hash, nome_completo, tipo) VALUES (?, ?, ?, ?)",
-            ("01", senha_hash_tecnico, "TÉCNICO", "tecnico"),
+            (tecnico_username, senha_hash_tecnico, "TÉCNICO", "tecnico"),
         )
 
         conn.commit()
 
         print("\nBanco de dados recriado com sucesso!")
-        print("\nCredenciais de acesso:")
-        print("  Administrador: 00 / 1234")
-        print("  Técnico: 01 / 1234")
+        print("\nCredenciais de acesso (conforme variáveis de ambiente):")
+        print(f"  Administrador: {admin_username} / {admin_password}")
+        print(f"  Técnico: {tecnico_username} / {tecnico_password}")
         print("\nPor segurança, altere as senhas após o primeiro login.")
 
         return True
