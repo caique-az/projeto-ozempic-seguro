@@ -190,7 +190,7 @@ class AuthService:
         return panel_map.get(tipo, UserPanel.UNKNOWN)
 
 
-# Função de conveniência para obter instância
 def get_auth_service() -> AuthService:
-    """Retorna instância do AuthService"""
-    return AuthService()
+    """Returns singleton AuthService instance via ServiceFactory."""
+    from .service_factory import ServiceFactory
+    return ServiceFactory.get_auth_service()

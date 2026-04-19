@@ -148,6 +148,18 @@ class ServiceFactory:
 
         return _registry.get_service("security_logger", create_security_logger)
 
+    @staticmethod
+    @log_exceptions("Auth Service Creation")
+    def get_auth_service():
+        """Retorna instância singleton de AuthService"""
+
+        def create_auth_service():
+            from .auth_service import AuthService
+
+            return AuthService()
+
+        return _registry.get_service("auth_service", create_auth_service)
+
     # Métodos para testes
     @staticmethod
     def set_mock_user_service(mock_service: Any) -> None:
@@ -158,6 +170,11 @@ class ServiceFactory:
     def set_mock_audit_service(mock_service: Any) -> None:
         """Define mock para AuditService (apenas para testes)"""
         _registry.set_mock("audit_service", mock_service)
+
+    @staticmethod
+    def set_mock_auth_service(mock_service: Any) -> None:
+        """Define mock para AuthService (apenas para testes)"""
+        _registry.set_mock("auth_service", mock_service)
 
     @staticmethod
     def clear_all_mocks() -> None:
@@ -179,6 +196,7 @@ class ServiceFactory:
                 "database_manager": "database_manager" in _registry._services,
                 "session_manager": "session_manager" in _registry._services,
                 "security_logger": "security_logger" in _registry._services,
+                "auth_service": "auth_service" in _registry._services,
             }
 
 
@@ -193,8 +211,14 @@ def get_audit_service():
     return ServiceFactory.get_audit_service()
 
 
+def get_auth_service():
+    """Função de conveniência para obter AuthService"""
+    return ServiceFactory.get_auth_service()
+
+
 __all__ = [
     "ServiceFactory",
     "get_user_service",
     "get_audit_service",
+    "get_auth_service",
 ]
